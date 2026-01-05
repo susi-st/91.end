@@ -141,19 +141,7 @@
             return `${m}分${s}秒`;
         };
 
-        const manipulateOptions = (array) => {
-            if (array.length === 2) {
-                return [array[1], array[0]];
-            }
-            const newArray = [...array];
-            for (let i = newArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-            }
-            return newArray;
-        };
-
-        const STORAGE_KEY = 'ninth_grade_assessment_v4'; // 使用 v4 避免舊資料衝突
+        const STORAGE_KEY = 'ninth_grade_assessment_v5'; // 更新版本號
 
         function AssessmentApp() {
             const [currentStep, setCurrentStep] = useState('loading'); 
@@ -162,6 +150,8 @@
             const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
             const [answers, setAnswers] = useState({});
             const [scores, setScores] = useState({});
+            // 新增狀態: 記錄各構面是否有「答題過快」的情形 (Key: dimension, Value: boolean)
+            const [speedViolations, setSpeedViolations] = useState({});
             
             const [startTime, setStartTime] = useState(null); 
             const [endTime, setEndTime] = useState(null);
@@ -227,42 +217,49 @@
             const handleAnswer = (option) => {
                 const now = Date.now();
                 const timeSpent = now - questionStartTime;
+                const currentConcept = QUIZ_DATA[currentConceptIndex];
                 const currentQ = questionSequence[currentQuestionIdx];
                 
-                if (timeSpent < 4000 && !currentQ.isRetry) {
-                    const retryQuestion = {
-                        ...currentQ,
-                        isRetry: true,
-                        options: manipulateOptions(currentQ.options)
-                    };
-                    const newSequence = [...questionSequence];
-                    newSequence.push(retryQuestion);
-                    setQuestionSequence(newSequence);
-                    setCurrentQuestionIdx(currentQuestionIdx + 1);
-                    return; 
+                let isCorrect = false;
+
+                // --- 答題速度檢核 ---
+                // 若答題時間 < 4000ms (4秒) -> 直接判錯，並記錄違規
+                if (timeSpent < 4000) {
+                    // console.log(`Too fast! (${timeSpent}ms). Marked as wrong.`);
+                    isCorrect = false; // 強制判錯
+                    
+                    // 記錄該構面發生過快情形
+                    setSpeedViolations(prev => ({
+                        ...prev,
+                        [currentConcept.dimension]: true
+                    }));
+                } else {
+                    // 正常計分
+                    isCorrect = (option === currentQ.correctAnswer);
                 }
 
-                const concept = QUIZ_DATA[currentConceptIndex];
-                const isCorrect = option === currentQ.correctAnswer;
-                
+                // 記錄答案
                 const newAnswers = { ...answers, [currentQ.id]: isCorrect };
                 setAnswers(newAnswers);
 
-                if (currentQuestionIdx === 1 && !currentQ.isRetry && !questionSequence[0].isRetry) { 
-                    const q1Result = newAnswers[concept.questions[0].id];
+                // 適性化加題判斷
+                // 邏輯：如果是該 Concept 的第 2 題 (index 1)
+                if (currentQuestionIdx === 1) { 
+                    const q1Result = newAnswers[currentConcept.questions[0].id];
                     const q2Result = isCorrect;
                     
                     let nextSequence = [...questionSequence];
                     
+                    // 若答對一半 (一對一錯)，加入第三題
                     if (q1Result !== q2Result) {
-                        nextSequence.push(concept.questions[2]); 
+                        nextSequence.push(currentConcept.questions[2]); 
                         setQuestionSequence(nextSequence);
                         setCurrentQuestionIdx(currentQuestionIdx + 1);
                     } else {
-                        goToNextConcept(concept.id, newAnswers, nextSequence);
+                        goToNextConcept(currentConcept.id, newAnswers, nextSequence);
                     }
                 } else if (currentQuestionIdx >= questionSequence.length - 1) { 
-                    goToNextConcept(concept.id, newAnswers, questionSequence);
+                    goToNextConcept(currentConcept.id, newAnswers, questionSequence);
                 } else {
                     setCurrentQuestionIdx(currentQuestionIdx + 1);
                 }
@@ -330,11 +327,19 @@
                     if(dim === DIMENSIONS.COMPUTATION) title = "二、運算思維與數值轉換";
                     if(dim === DIMENSIONS.APPLICATION) title = "三、系統應用與編碼素養";
 
+                    // 預設評語
+                    let feedbackText = FEEDBACK_LIBRARY[dim][level];
+
+                    // **特殊規則：若該構面有「答題過快」紀錄，強制修改評語**
+                    if (speedViolations[dim]) {
+                        feedbackText = "答題速度過快，難以評斷";
+                    }
+
                     return {
                         dim,
                         title,
                         level,
-                        text: FEEDBACK_LIBRARY[dim][level]
+                        text: feedbackText
                     };
                 });
 
@@ -429,7 +434,9 @@
                                         <div className="absolute -top-3 left-6 bg-yellow-400 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">測驗說明</div>
                                         <ul className="list-none space-y-3 text-sm text-gray-600 mt-2">
                                             <li className="flex items-center gap-2"><Heart size={16} className="text-rose-400 fill-current" /> 題型只有「是非題」或「二選一」，輕鬆作答！</li>
-                                            <li className="flex items-center gap-2"><Cloud size={16} className="text-sky-400 fill-current" /> 請認真看題目，<span className="text-rose-500 font-bold">作答太快會被系統發現喔！</span></li>
+                                            <li className="flex items-center gap-2"><Cloud size={16} className="text-sky-400 fill-current" /> 
+                                                <span className="text-rose-500 font-bold">不列入成績計算，而是為了了解你是否有學到課程中的觀念</span>
+                                            </li>
                                             <li className="flex items-center gap-2"><Lock size={16} className="text-purple-400 fill-current" /> 只能填寫一次，請勿重新整理頁面。</li>
                                         </ul>
                                     </div>
@@ -589,7 +596,7 @@
                                     <div className="flex flex-col items-center justify-center mt-6 p-6 bg-white rounded-3xl w-full max-w-xs mx-auto border-2 border-dashed border-gray-200 shadow-inner">
                                         <span className="text-gray-400 text-xs uppercase tracking-widest font-bold mb-1">您的專屬識別碼</span>
                                         <span className="text-4xl font-mono font-bold text-sky-500 tracking-widest">{randomId}</span>
-                                        <span className="text-xs text-rose-400 mt-2 font-medium bg-rose-50 px-3 py-1 rounded-full">記得抄寫在學習單上喔</span>
+                                        <span className="text-xs text-rose-400 mt-2 font-medium bg-rose-50 px-3 py-1 rounded-full">請截圖整個大框框的範圍</span>
                                     </div>
                                 </div>
                             </div>
