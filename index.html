@@ -1,0 +1,615 @@
+import React, { useState, useEffect } from 'react';
+import { CheckCircle, AlertCircle, ArrowRight, BookOpen, Calculator, Layout, Award, RefreshCw, Send, Lock, Star, Heart, Cloud } from 'lucide-react';
+
+// !!! 重要：請將 Google Apps Script 部署後的 Web App URL 貼在這裡 !!!
+// 若未設定，資料將無法寫入試算表，但仍可看到模擬結果。
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpZuCMZXJMAeu5EgcWCQROj8k-b7FMXDRTqlxZRI65sTtJJmGJ4dcGj7lq74iuxni9/exec"; 
+
+// --- 資料設定 (題目與評語庫) ---
+
+const DIMENSIONS = {
+  CONCEPT: 'concept',
+  COMPUTATION: 'computation',
+  APPLICATION: 'application'
+};
+
+const FEEDBACK_LIBRARY = {
+  [DIMENSIONS.CONCEPT]: {
+    A: "你在資訊科技的邏輯理解上表現卓越！不僅能精確掌握資料數位化（取樣與量化）的核心原理，也能清楚區分點陣與向量圖的差異。",
+    B: "本學期你對電腦運作原理已有穩固的基礎，能理解現實世界的聲音與影像如何轉換為電腦中的 0 與 1，但在細節原理的解釋上可以更精確。",
+    C: "你已經建立了電腦使用 0 與 1 儲存資料的基本概念。建議在數位化原理（如聲音的取樣過程）多花點時間複習，釐清取樣與量化的差異。"
+  },
+  [DIMENSIONS.COMPUTATION]: {
+    A: "在二進位運算與檔案容量估算上展現了嚴謹的運算思維，能靈活運用公式計算未壓縮音訊大小，並正確進行單位的換算。",
+    B: "在進位制轉換計算上大致正確，唯在複雜的單位換算（如 bits 轉 MB）細節上可再細心一點，公式運用尚稱熟練。",
+    C: "建議多練習二進位的計算規則，並試著搞懂 Bit 與 Byte 的倍數差異，這對於未來評估手機或電腦容量非常重要。"
+  },
+  [DIMENSIONS.APPLICATION]: {
+    A: "你對於不同文字編碼（Unicode/Big-5）與影像格式的特性瞭若指掌，能針對不同需求做出最佳的技術選擇，具備優秀的數位公民素養。",
+    B: "對於常見的檔案格式（JPG, MP3）有基本認識，若能進一步深究不同編碼系統（如亂碼原因）的差異，你的資訊素養將更上一層樓。",
+    C: "對於檔案格式的用途與文字編碼的概念較為模糊，建議多觀察生活中的檔案附檔名，將有助於理解這些數位工具的特性。"
+  }
+};
+
+const QUIZ_DATA = [
+  {
+    id: 'c1',
+    title: '數位化原理：取樣與量化',
+    dimension: DIMENSIONS.CONCEPT,
+    questions: [
+      { id: 'q1-1', type: 'TF', text: '「取樣」是指將連續的類比訊號，在時間軸上切割成不連續的點。', options: ['正確', '錯誤'], correctAnswer: '正確' },
+      { id: 'q1-2', type: 'MC', text: '若要提高錄音的品質，使其更接近原音，應該如何調整？', options: ['提高取樣頻率與解析度', '降低取樣頻率與解析度'], correctAnswer: '提高取樣頻率與解析度' },
+      { id: 'q1-3', type: 'MC', text: '關於「量化」的敘述，下列何者正確？', options: ['量化是紀錄波形的振幅數值', '量化是紀錄時間的長短'], correctAnswer: '量化是紀錄波形的振幅數值' }
+    ]
+  },
+  {
+    id: 'c2',
+    title: '數位影像：點陣與向量',
+    dimension: DIMENSIONS.CONCEPT,
+    questions: [
+      { id: 'q2-1', type: 'TF', text: '「向量圖」放大後邊緣會產生鋸齒狀的失真，不適合用於大圖輸出。', options: ['正確', '錯誤'], correctAnswer: '錯誤' },
+      { id: 'q2-2', type: 'MC', text: '手機拍出來的照片，通常是屬於哪一種類型的圖檔？', options: ['點陣圖 (Bitmap)', '向量圖 (Vector)'], correctAnswer: '點陣圖 (Bitmap)' },
+      { id: 'q2-3', type: 'MC', text: '哪一種圖檔是透過數學公式來紀錄圖形的形狀與顏色？', options: ['向量圖', '點陣圖'], correctAnswer: '向量圖' }
+    ]
+  },
+  {
+    id: 'c3',
+    title: '資料表示：二進位系統',
+    dimension: DIMENSIONS.COMPUTATION,
+    questions: [
+      { id: 'q3-1', type: 'TF', text: '電腦內部處理資料時，主要是使用「十進位」系統。', options: ['正確', '錯誤'], correctAnswer: '錯誤' },
+      { id: 'q3-2', type: 'MC', text: '十進位的數字「3」，轉換成二進位是多少？', options: ['10', '11'], correctAnswer: '11' },
+      { id: 'q3-3', type: 'MC', text: '二進位的「100」，轉換成十進位是多少？', options: ['4', '8'], correctAnswer: '4' }
+    ]
+  },
+  {
+    id: 'c4',
+    title: '儲存單位與容量計算',
+    dimension: DIMENSIONS.COMPUTATION,
+    questions: [
+      { id: 'q4-1', type: 'MC', text: '1 Byte (位元組) 等於多少 bits (位元)？', options: ['8 bits', '10 bits'], correctAnswer: '8 bits' },
+      { id: 'q4-2', type: 'TF', text: '在儲存單位中，1 GB 的容量比 1 MB 還要小。', options: ['正確', '錯誤'], correctAnswer: '錯誤' },
+      { id: 'q4-3', type: 'MC', text: '若要計算未壓縮聲音檔的大小，公式中「不需要」包含下列哪一項？', options: ['錄音時間長度', '麥克風的廠牌'], correctAnswer: '麥克風的廠牌' }
+    ]
+  },
+  {
+    id: 'c5',
+    title: '系統應用：編碼與格式',
+    dimension: DIMENSIONS.APPLICATION,
+    questions: [
+      { id: 'q5-1', type: 'MC', text: '若網頁出現亂碼，通常是因為哪兩種編碼系統衝突？', options: ['Big-5 與 Unicode', 'RGB 與 CMYK'], correctAnswer: 'Big-5 與 Unicode' },
+      { id: 'q5-2', type: 'MC', text: '想要製作背景透明的圖示，應該選擇哪種檔案格式？', options: ['JPG', 'PNG'], correctAnswer: 'PNG' },
+      { id: 'q5-3', type: 'MC', text: 'RGB 色彩模式中，(255, 255, 255) 代表什麼顏色？', options: ['黑色', '白色'], correctAnswer: '白色' }
+    ]
+  }
+];
+
+// --- 輔助函式 ---
+
+// 產生 5 位數隨機碼
+const generateRandomId = () => Math.floor(10000 + Math.random() * 90000).toString();
+
+// 格式化時間 (秒 -> mm分ss秒)
+const formatTime = (seconds) => {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}分${s}秒`;
+};
+
+// LocalStorage Key
+const STORAGE_KEY = 'ninth_grade_assessment_v2';
+
+export default function AssessmentApp() {
+  const [currentStep, setCurrentStep] = useState('loading'); // loading, intro, quiz, submission, result
+  const [currentConceptIndex, setCurrentConceptIndex] = useState(0);
+  const [questionSequence, setQuestionSequence] = useState([]); 
+  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [scores, setScores] = useState({});
+  
+  // 新增狀態
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
+  const [userInfo, setUserInfo] = useState({ className: '1', seatNumber: '' });
+  const [randomId, setRandomId] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [alreadyCompleted, setAlreadyCompleted] = useState(false);
+  const [storedFeedback, setStoredFeedback] = useState([]); // 用於重整後顯示
+
+  // 1. 初始化檢查 (Component Mount)
+  useEffect(() => {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      if (parsedData.completed) {
+        // 如果已經完成，直接恢復資料並跳轉到結果頁
+        setRandomId(parsedData.randomId);
+        setUserInfo(parsedData.userInfo);
+        setStoredFeedback(parsedData.feedbackList); // 需要儲存評語以便恢復
+        setAlreadyCompleted(true);
+        setCurrentStep('result');
+        return;
+      }
+    }
+    setCurrentStep('intro');
+  }, []);
+
+  // 2. 測驗邏輯
+  useEffect(() => {
+    if (currentStep === 'quiz' && currentConceptIndex === 0 && currentQuestionIdx === 0 && !startTime) {
+      setStartTime(Date.now());
+    }
+    if (currentStep === 'quiz') {
+      loadConcept(currentConceptIndex || 0);
+    }
+  }, [currentStep]);
+
+  const loadConcept = (index) => {
+    if (index >= QUIZ_DATA.length) {
+      setEndTime(Date.now());
+      setCurrentStep('submission');
+      return;
+    }
+    setCurrentConceptIndex(index);
+    const concept = QUIZ_DATA[index];
+    // 若尚未設定過該 Concept 的題目序列，則初始化
+    if (questionSequence.length === 0 || QUIZ_DATA[index].id !== QUIZ_DATA[currentConceptIndex]?.id) {
+       setQuestionSequence([concept.questions[0], concept.questions[1]]);
+       setCurrentQuestionIdx(0);
+    }
+  };
+
+  const handleAnswer = (option) => {
+    const concept = QUIZ_DATA[currentConceptIndex];
+    const currentQ = questionSequence[currentQuestionIdx];
+    const isCorrect = option === currentQ.correctAnswer;
+    
+    const newAnswers = { ...answers, [currentQ.id]: isCorrect };
+    setAnswers(newAnswers);
+
+    if (currentQuestionIdx === 1) { 
+      const q1Result = newAnswers[concept.questions[0].id];
+      const q2Result = isCorrect;
+      let nextSequence = [...questionSequence];
+      
+      if (q1Result !== q2Result) {
+        nextSequence.push(concept.questions[2]); 
+        setQuestionSequence(nextSequence);
+        setCurrentQuestionIdx(currentQuestionIdx + 1);
+      } else {
+        goToNextConcept(concept.id, newAnswers, nextSequence);
+      }
+    } else if (currentQuestionIdx === 2) { 
+      goToNextConcept(concept.id, newAnswers, questionSequence);
+    } else {
+      setCurrentQuestionIdx(currentQuestionIdx + 1);
+    }
+  };
+
+  const goToNextConcept = (conceptId, currentAnswers, sequence) => {
+    let correctCount = 0;
+    sequence.forEach(q => {
+      if (currentAnswers[q.id]) correctCount++;
+    });
+
+    setScores(prev => ({
+      ...prev,
+      [conceptId]: { correct: correctCount, total: sequence.length }
+    }));
+
+    // 重置序列狀態以迎接下一題
+    setQuestionSequence([]); 
+    setCurrentQuestionIdx(0);
+    
+    // 移動到下一個索引
+    loadConcept(currentConceptIndex + 1);
+  };
+
+  // 3. 評語生成邏輯
+  const generateFeedbackData = () => {
+    let dimensionScores = {
+      [DIMENSIONS.CONCEPT]: { correct: 0, total: 0 },
+      [DIMENSIONS.COMPUTATION]: { correct: 0, total: 0 },
+      [DIMENSIONS.APPLICATION]: { correct: 0, total: 0 }
+    };
+
+    QUIZ_DATA.forEach(concept => {
+      const score = scores[concept.id];
+      if (score) {
+        dimensionScores[concept.dimension].correct += score.correct;
+        dimensionScores[concept.dimension].total += score.total;
+      }
+    });
+
+    const feedbackList = Object.values(DIMENSIONS).map(dim => {
+      const { correct, total } = dimensionScores[dim] || { correct: 0, total: 0 };
+      const percentage = total === 0 ? 0 : (correct / total);
+      let level = 'C';
+      if (percentage >= 0.8) level = 'A';
+      else if (percentage >= 0.5) level = 'B';
+      
+      let title = "";
+      if(dim === DIMENSIONS.CONCEPT) title = "一、數位化原理的理解";
+      if(dim === DIMENSIONS.COMPUTATION) title = "二、運算思維與數值轉換";
+      if(dim === DIMENSIONS.APPLICATION) title = "三、系統應用與編碼素養";
+
+      return {
+        dim,
+        title,
+        level,
+        text: FEEDBACK_LIBRARY[dim][level]
+      };
+    });
+
+    return feedbackList;
+  };
+
+  // 4. 資料送出邏輯
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!userInfo.seatNumber) {
+      alert("請輸入座號！");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError('');
+
+    // 準備資料
+    const feedbackList = generateFeedbackData();
+    const generatedRandomId = generateRandomId();
+    const durationSeconds = (endTime - startTime) / 1000;
+    const formattedTime = formatTime(durationSeconds);
+    const teacherSummaryText = "在九年級這個階段，評量的核心不應只是「算對數學題」，而是「連結真實世界」。希望你現在已經懂得為什麼 3 分鐘的未壓縮錄音檔會這麼大，以及為什麼我們需要 MP3 格式來壓縮它。";
+
+    // 組合要傳送給 Google Sheet 的資料
+    const payload = {
+      className: `九年${userInfo.className}班`,
+      seatNumber: userInfo.seatNumber,
+      conceptLevel: feedbackList.find(f => f.dim === DIMENSIONS.CONCEPT)?.level,
+      computationLevel: feedbackList.find(f => f.dim === DIMENSIONS.COMPUTATION)?.level,
+      applicationLevel: feedbackList.find(f => f.dim === DIMENSIONS.APPLICATION)?.level,
+      feedbackText: feedbackList.map(f => `[${f.title}] ${f.text}`).join("\n"),
+      teacherSummary: teacherSummaryText,
+      totalTime: formattedTime,
+      randomId: generatedRandomId
+    };
+
+    try {
+      if (GOOGLE_SCRIPT_URL) {
+        // 發送 POST 請求 (no-cors 模式無法讀取回傳值，但可成功寫入)
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors', 
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        console.warn("未設定 GOOGLE_SCRIPT_URL，僅模擬送出。");
+        // 模擬延遲
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+
+      // 成功後處理
+      setRandomId(generatedRandomId);
+      setStoredFeedback(feedbackList);
+      
+      // 寫入 LocalStorage 防止重覆提交
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        completed: true,
+        randomId: generatedRandomId,
+        userInfo: userInfo,
+        feedbackList: feedbackList
+      }));
+
+      setCurrentStep('result');
+
+    } catch (error) {
+      console.error("Submission Error:", error);
+      setSubmitError("資料傳送失敗，請檢查網路連線或稍後再試。");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --- Render ---
+
+  if (currentStep === 'loading') {
+    return <div className="min-h-screen flex items-center justify-center bg-pink-50 text-gray-500 font-medium">✨ 準備中...</div>;
+  }
+
+  // 1. 介紹頁 - 馬卡龍風格
+  if (currentStep === 'intro') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-sky-100 flex items-center justify-center p-4 font-sans">
+        <div className="bg-white/90 backdrop-blur max-w-2xl w-full rounded-[3rem] shadow-xl overflow-hidden border-4 border-white">
+          <div className="bg-rose-400 p-10 text-white text-center relative overflow-hidden">
+            {/* 裝飾圓點 */}
+            <div className="absolute top-0 left-0 w-20 h-20 bg-white/20 rounded-full -translate-x-10 -translate-y-10"></div>
+            <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/10 rounded-full translate-x-10 translate-y-10"></div>
+            
+            <h1 className="text-3xl font-bold mb-3 tracking-wide drop-shadow-md">九年級資訊科技</h1>
+            <h2 className="text-xl font-medium opacity-95 flex items-center justify-center gap-2">
+              <Star className="text-yellow-300 fill-current" size={24}/> 期末學習成果總結 <Star className="text-yellow-300 fill-current" size={24}/>
+            </h2>
+          </div>
+          <div className="p-10">
+            <div className="space-y-6 text-gray-600">
+              <p className="text-lg leading-relaxed text-center font-medium">
+                嗨！各位同學好 👋 <br/>
+                這是一個可愛的小測驗，幫你回顧這學期學到的<br/>
+                <span className="text-rose-500 font-bold">資料數位化</span> 與 <span className="text-sky-500 font-bold">0與1的秘密</span>。
+              </p>
+              
+              <div className="bg-yellow-50 p-6 rounded-3xl border-2 border-yellow-200 space-y-3 relative">
+                 <div className="absolute -top-3 left-6 bg-yellow-400 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">
+                   測驗說明
+                 </div>
+                <ul className="list-none space-y-3 text-sm text-gray-600 mt-2">
+                  <li className="flex items-center gap-2">
+                    <Heart size={16} className="text-rose-400 fill-current" /> 題型只有「是非題」或「二選一」，輕鬆作答！
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Cloud size={16} className="text-sky-400 fill-current" /> 測驗結束後，會產生一組<strong>專屬識別碼</strong>。
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Lock size={16} className="text-purple-400 fill-current" /> <span className="text-rose-500 font-bold">注意：</span>只能填寫一次，請勿重新整理頁面喔！
+                  </li>
+                </ul>
+              </div>
+
+              <button 
+                onClick={() => setCurrentStep('quiz')}
+                className="w-full bg-sky-400 hover:bg-sky-500 text-white font-bold py-4 px-6 rounded-full transition-all transform hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2 shadow-lg hover:shadow-sky-200 text-lg"
+              >
+                開始冒險 <ArrowRight size={24} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. 測驗頁 - 馬卡龍風格
+  if (currentStep === 'quiz') {
+    const currentConcept = QUIZ_DATA[currentConceptIndex];
+    const currentQuestion = questionSequence[currentQuestionIdx];
+    
+    if (!currentConcept || !currentQuestion) {
+      return <div className="min-h-screen flex items-center justify-center bg-pink-50 text-gray-400">載入題目中...</div>;
+    }
+    
+    const totalConcepts = QUIZ_DATA.length;
+    const progress = ((currentConceptIndex) / totalConcepts) * 100;
+
+    return (
+      <div className="min-h-screen bg-[#fff8f0] flex items-center justify-center p-4 font-sans">
+        <div className="max-w-xl w-full">
+          {/* 進度條 */}
+          <div className="mb-6 bg-white p-3 rounded-full shadow-sm border border-orange-100 flex items-center gap-3">
+            <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+               <div className="h-full bg-gradient-to-r from-rose-300 to-orange-300 transition-all duration-700 ease-out" style={{ width: `${progress}%` }}></div>
+            </div>
+            <span className="text-xs font-bold text-orange-400 whitespace-nowrap">{Math.round(progress)}% 完成</span>
+          </div>
+
+          <div className="bg-white rounded-[2rem] shadow-xl border-4 border-white overflow-hidden relative ring-4 ring-orange-50">
+            {/* 標題列 */}
+            <div className="bg-amber-100 px-8 py-5 flex items-center gap-3 border-b-2 border-amber-200 border-dashed">
+              <div className="bg-white p-2 rounded-full text-amber-500 shadow-sm">
+                <BookOpen size={20} />
+              </div>
+              <span className="font-bold text-amber-800 text-lg">{currentConcept.title}</span>
+            </div>
+
+            <div className="p-8">
+               {/* 題目標籤 */}
+               <div className="mb-6">
+                 <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-bold mb-4 shadow-sm
+                    ${currentQuestion.type === 'TF' ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-600'}`}>
+                   {currentQuestion.type === 'TF' ? '⭕ ❌ 是非題' : '🔢 選擇題'}
+                 </span>
+                 <h3 className="text-xl font-bold text-gray-700 leading-relaxed tracking-wide">
+                   {currentQuestion.text}
+                 </h3>
+               </div>
+
+               {/* 選項 */}
+               <div className="grid grid-cols-1 gap-4">
+                 {currentQuestion.options.map((option, idx) => (
+                   <button
+                     key={idx}
+                     onClick={() => handleAnswer(option)}
+                     className="group relative p-5 text-left bg-gray-50 border-2 border-gray-100 rounded-2xl hover:border-sky-300 hover:bg-sky-50 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98]"
+                   >
+                     <div className="flex items-center justify-between">
+                       <span className="font-bold text-gray-600 group-hover:text-sky-600 text-lg pl-2">
+                         {option}
+                       </span>
+                       <div className="w-8 h-8 rounded-full bg-white border-2 border-gray-200 group-hover:border-sky-400 flex items-center justify-center transition-colors">
+                         <div className="w-3 h-3 rounded-full bg-sky-400 opacity-0 group-hover:opacity-100 transition-opacity transform scale-0 group-hover:scale-100"></div>
+                       </div>
+                     </div>
+                   </button>
+                 ))}
+               </div>
+            </div>
+
+            {questionSequence.length === 3 && currentQuestionIdx === 2 && (
+              <div className="absolute top-20 right-0 m-4 animate-bounce">
+                <span className="flex items-center gap-1 bg-rose-100 text-rose-500 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm border border-rose-200">
+                  <Star size={14} className="fill-current"/> 加分題！
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. 資料填寫頁 - 馬卡龍風格
+  if (currentStep === 'submission') {
+    return (
+      <div className="min-h-screen bg-gradient-to-t from-violet-100 to-white flex items-center justify-center p-4 font-sans">
+        <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-4 border-white">
+          <div className="bg-violet-400 p-8 text-white text-center">
+            <h2 className="text-2xl font-bold flex justify-center items-center gap-2">
+              <Award className="text-yellow-300" /> 恭喜完成！
+            </h2>
+            <p className="opacity-90 mt-2 text-sm font-medium">填寫一下資料，看看你的成果吧 ✨</p>
+          </div>
+          <div className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              
+              <div>
+                <label className="block text-sm font-bold text-gray-500 mb-2 ml-2">班級 (九年級)</label>
+                <div className="relative">
+                  <select 
+                    value={userInfo.className}
+                    onChange={(e) => setUserInfo({...userInfo, className: e.target.value})}
+                    className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl appearance-none focus:ring-4 focus:ring-violet-100 focus:border-violet-300 outline-none text-lg text-gray-700 transition-all font-medium"
+                  >
+                    {[...Array(10)].map((_, i) => (
+                      <option key={i+1} value={i+1}>{i+1} 班</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400">▼</div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-500 mb-2 ml-2">座號</label>
+                <input 
+                  type="number" 
+                  min="1" 
+                  max="50"
+                  placeholder="請輸入號碼..."
+                  value={userInfo.seatNumber}
+                  onChange={(e) => setUserInfo({...userInfo, seatNumber: e.target.value})}
+                  className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-violet-100 focus:border-violet-300 outline-none text-lg text-gray-700 transition-all font-medium placeholder-gray-300"
+                  required
+                />
+              </div>
+
+              {submitError && (
+                <div className="p-4 bg-rose-50 text-rose-500 rounded-2xl text-sm flex items-center gap-2 border border-rose-100">
+                  <AlertCircle size={18}/> {submitError}
+                </div>
+              )}
+              
+              {!GOOGLE_SCRIPT_URL && (
+                <div className="p-3 bg-amber-50 text-amber-600 rounded-xl text-xs text-center border border-amber-100">
+                  ⚠️ 模擬模式：資料不會實際上傳
+                </div>
+              )}
+
+              <button 
+                type="submit"
+                disabled={isSubmitting}
+                className={`w-full py-4 px-6 rounded-2xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all mt-4
+                  ${isSubmitting ? 'bg-gray-300 cursor-not-allowed' : 'bg-violet-400 hover:bg-violet-500 hover:shadow-violet-200 hover:-translate-y-1'}`}
+              >
+                {isSubmitting ? '傳送中...' : '送出並查看結果'} 
+                {!isSubmitting && <Send size={18} />}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. 結果頁 - 馬卡龍風格 + 等級 C 隱藏邏輯
+  if (currentStep === 'result') {
+    const displayFeedback = storedFeedback.length > 0 ? storedFeedback : generateFeedbackData();
+
+    return (
+      <div className="min-h-screen bg-[#f8fafc] p-4 font-sans">
+        <div className="max-w-3xl mx-auto space-y-6">
+          
+          {/* 已完成提示 & 識別碼 */}
+          <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border-4 border-white relative">
+            {alreadyCompleted && (
+              <div className="bg-amber-100 text-amber-700 text-center py-2 text-sm font-bold flex items-center justify-center gap-2">
+                <Lock size={14}/> 您已完成測驗
+              </div>
+            )}
+            <div className="p-10 text-center bg-gradient-to-b from-green-50 to-white">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 text-green-500 rounded-full mb-5 shadow-sm">
+                <CheckCircle size={40} />
+              </div>
+              <h2 className="text-3xl font-extrabold text-gray-700 mb-2 tracking-tight">
+                {userInfo.className ? `九年 ${userInfo.className} 班 ${userInfo.seatNumber} 號` : '測驗完成'}
+              </h2>
+              <p className="text-gray-400 text-sm font-medium">做得好！以下是你的學習分析</p>
+              
+              <div className="flex flex-col items-center justify-center mt-6 p-6 bg-white rounded-3xl w-full max-w-xs mx-auto border-2 border-dashed border-gray-200 shadow-inner">
+                <span className="text-gray-400 text-xs uppercase tracking-widest font-bold mb-1">您的專屬識別碼</span>
+                <span className="text-4xl font-mono font-bold text-sky-500 tracking-widest">{randomId}</span>
+                <span className="text-xs text-rose-400 mt-2 font-medium bg-rose-50 px-3 py-1 rounded-full">記得抄寫在學習單上喔</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 評語區塊 */}
+          {displayFeedback.map((item, index) => (
+            <div key={index} className={`bg-white rounded-[2rem] shadow-sm p-8 border-4 transition-transform hover:scale-[1.01] duration-300
+                 ${item.level === 'A' ? 'border-emerald-100' : 
+                   item.level === 'B' ? 'border-sky-100' : 
+                   'border-orange-50' // C 等級用更柔和的框線
+                  }`}>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className={`text-xl font-bold flex items-center gap-2
+                    ${item.level === 'A' ? 'text-emerald-600' : 
+                      item.level === 'B' ? 'text-sky-600' : 
+                      'text-orange-400'}`}>
+                   {item.level === 'A' && <Star className="fill-current" size={20}/>}
+                   {item.title}
+                </h3>
+                
+                {/* 邏輯：若為 C 則不顯示等級標籤 */}
+                {item.level !== 'C' && (
+                  <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm
+                    ${item.level === 'A' ? 'bg-emerald-100 text-emerald-600' : 
+                      'bg-sky-100 text-sky-600'}`}>
+                    表現等級：{item.level}
+                  </span>
+                )}
+              </div>
+              <p className="text-gray-600 leading-relaxed text-justify whitespace-pre-wrap font-medium">
+                {item.text}
+              </p>
+            </div>
+          ))}
+
+          {/* 教師總結 - 漸層卡片 */}
+          <div className="bg-gradient-to-r from-violet-300 to-fuchsia-300 rounded-[2rem] shadow-lg p-8 text-white relative overflow-hidden">
+             {/* 背景裝飾 */}
+             <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full translate-x-10 -translate-y-10 blur-xl"></div>
+
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2 relative z-10">
+              <Award size={24} className="text-yellow-200" /> 老師的話
+            </h3>
+            <p className="leading-relaxed font-medium relative z-10 text-white/95">
+              在九年級這個階段，我們希望你學到的不只是「算對數學題」，而是能連結真實世界。
+              <br className="my-3 block"/>
+              希望你現在已經懂得為什麼 3 分鐘的未壓縮錄音檔會這麼大，以及為什麼我們需要 MP3 格式來壓縮它。
+              期待這門課能幫助你了解生活中的數位科技，其實都源自於這些 0 與 1 的基礎原理！
+            </p>
+          </div>
+          
+          <div className="text-center text-gray-400 text-xs py-6 font-medium">
+            測驗結束，請關閉視窗或通知老師登記成績 ✨
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
