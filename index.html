@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle, AlertCircle, ArrowRight, BookOpen, Calculator, Layout, Award, Send, Lock, Star, Heart, Cloud, Smile, PenTool, MessageCircle } from 'lucide-react';
 
-// Google Apps Script URL (請確認此網址正確)
+// Google Apps Script URL
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpZuCMZXJMAeu5EgcWCQROj8k-b7FMXDRTqlxZRI65sTtJJmGJ4dcGj7lq74iuxni9/exec"; 
 
 // --- 資料設定 ---
@@ -99,8 +99,13 @@ const formatTime = (seconds) => {
   return `${m}分${s}秒`;
 };
 
-// 洗牌陣列 (Fisher-Yates Shuffle)
-const shuffleArray = (array) => {
+// 選項處理函式
+const manipulateOptions = (array) => {
+  // 針對是非題或二選一，強制反轉順序 (故意調換)
+  if (array.length === 2) {
+    return [array[1], array[0]];
+  }
+  // 其他情況則隨機洗牌
   const newArray = [...array];
   for (let i = newArray.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -119,13 +124,13 @@ export default function AssessmentApp() {
   const [answers, setAnswers] = useState({});
   const [scores, setScores] = useState({});
   
-  // 新增/修改狀態
-  const [startTime, setStartTime] = useState(null); // 整個測驗開始時間
+  // 狀態
+  const [startTime, setStartTime] = useState(null); 
   const [endTime, setEndTime] = useState(null);
   const [questionStartTime, setQuestionStartTime] = useState(null); // 單題計時
   
   const [userInfo, setUserInfo] = useState({ className: '1', seatNumber: '' });
-  const [surveyAnswers, setSurveyAnswers] = useState({}); // 儲存反思題答案
+  const [surveyAnswers, setSurveyAnswers] = useState({});
   const [randomId, setRandomId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -135,14 +140,21 @@ export default function AssessmentApp() {
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
-      const parsedData = JSON.parse(savedData);
-      if (parsedData.completed) {
-        setRandomId(parsedData.randomId);
-        setUserInfo(parsedData.userInfo);
-        setStoredFeedback(parsedData.feedbackList);
-        setAlreadyCompleted(true);
-        setCurrentStep('result');
-        return;
+      try {
+        const parsedData = JSON.parse(savedData);
+        if (parsedData.completed) {
+          setRandomId(parsedData.randomId || '');
+          setUserInfo(parsedData.userInfo || { className: '1', seatNumber: '' });
+          // 防呆：如果舊資料沒有 feedbackList，給一個空陣列避免 crash
+          setStoredFeedback(parsedData.feedbackList || []);
+          setAlreadyCompleted(true);
+          setCurrentStep('result');
+          return;
+        }
+      } catch (e) {
+        console.error("Local storage parse error", e);
+        // 若資料損毀，清除並重新開始
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
     setCurrentStep('intro');
@@ -153,7 +165,7 @@ export default function AssessmentApp() {
     if (currentStep === 'quiz' && questionSequence.length > 0) {
       setQuestionStartTime(Date.now());
     }
-  }, [currentQuestionIdx, currentStep, questionSequence]); // 當題目切換時重置計時
+  }, [currentQuestionIdx, currentStep, questionSequence]);
 
   // 全局開始計時
   useEffect(() => {
@@ -167,15 +179,13 @@ export default function AssessmentApp() {
 
   const loadConcept = (index) => {
     if (index >= QUIZ_DATA.length) {
-      // 測驗結束，進入反思問卷
       setCurrentStep('survey');
       return;
     }
     setCurrentConceptIndex(index);
     const concept = QUIZ_DATA[index];
-    // 初始化題目序列 (僅在第一次進入該 Concept 時)
+    // 初始化題目序列
     if (questionSequence.length === 0 || QUIZ_DATA[index].id !== QUIZ_DATA[currentConceptIndex]?.id) {
-       // 預設載入前兩題
        setQuestionSequence([concept.questions[0], concept.questions[1]]);
        setCurrentQuestionIdx(0);
     }
@@ -187,70 +197,62 @@ export default function AssessmentApp() {
     const currentQ = questionSequence[currentQuestionIdx];
     
     // --- 防猜題機制 ---
-    // 條件：作答時間 < 4000ms (4秒) 且 不是重試題 (isRetry 不為 true)
+    // 條件：作答時間 < 4000ms 且 不是重試題
     if (timeSpent < 4000 && !currentQ.isRetry) {
       console.log(`Too fast! (${timeSpent}ms). Rescheduling question.`);
       
-      // 1. 複製題目並標記為重試
       const retryQuestion = {
         ...currentQ,
         isRetry: true, // 標記：下次出現時不限時間
-        options: shuffleArray(currentQ.options) // 選項洗牌
+        options: manipulateOptions(currentQ.options) // 選項調換
       };
 
-      // 2. 將題目排到目前的序列最後
+      // 將題目排到最後
       const newSequence = [...questionSequence];
       newSequence.push(retryQuestion);
       setQuestionSequence(newSequence);
 
-      // 3. 直接跳下一題，不計分
+      // 跳下一題，不計分
       setCurrentQuestionIdx(currentQuestionIdx + 1);
       return; 
     }
 
-    // --- 正常計分邏輯 ---
+    // --- 正常計分 ---
     const concept = QUIZ_DATA[currentConceptIndex];
     const isCorrect = option === currentQ.correctAnswer;
     
-    // 記錄答案 (如果是重試題，會覆蓋之前的紀錄，這是預期的)
     const newAnswers = { ...answers, [currentQ.id]: isCorrect };
     setAnswers(newAnswers);
 
-    // 判斷是否需要適性化加題 (僅針對「原始」的前兩題判斷)
-    // 透過題號 (index 0 和 1) 來判斷，且必須確保這不是被挪到後面的重試題
-    // 簡單判斷：如果是此序列的第 2 題 (index 1)，且不是 Retry 題，則進行檢核
+    // 適性化加題判斷 (僅針對原始第2題，且確保第1題沒被移走)
     if (currentQuestionIdx === 1 && !currentQ.isRetry && !questionSequence[0].isRetry) { 
+      // 這裡需要確保 answers 中有第一題的答案 (如果第一題被移走，這裡會是 undefined)
+      // 但上面的 !questionSequence[0].isRetry 已經部分保護了
       const q1Result = newAnswers[concept.questions[0].id];
       const q2Result = isCorrect;
       
+      // 如果 Q1 因為某些原因沒有答案（例如邏輯漏洞），我們預設給予加分題以防萬一
+      // 或者：如果 q1Result !== q2Result
+      
       let nextSequence = [...questionSequence];
       
-      // 若答對一半，插入第三題
       if (q1Result !== q2Result) {
         nextSequence.push(concept.questions[2]); 
         setQuestionSequence(nextSequence);
-        // 繼續下一題
         setCurrentQuestionIdx(currentQuestionIdx + 1);
       } else {
-        // 全對或全錯，計算分數並跳轉
         goToNextConcept(concept.id, newAnswers, nextSequence);
       }
     } else if (currentQuestionIdx >= questionSequence.length - 1) { 
-      // 已經是最後一題 (包含加分題或重試題)
       goToNextConcept(concept.id, newAnswers, questionSequence);
     } else {
-      // 還有題目，繼續下一題
       setCurrentQuestionIdx(currentQuestionIdx + 1);
     }
   };
 
   const goToNextConcept = (conceptId, currentAnswers, sequence) => {
-    // 結算分數：只計算「非重試」題的最後結果，或者簡單地：
-    // 因為重試題會覆蓋 `answers` 裡的 key，所以直接遍歷原始題庫的 ID 來檢查 `answers` 即可
-    // 但因為有加分題，我們遍歷 `sequence` 中不重複的 ID 比較準確
-    
     let correctCount = 0;
-    // 使用 Set 過濾重複題目 (原題+重試題)
+    // 使用 Map 過濾重複題目，只取最後一次作答的設定
     const uniqueQuestions = new Map();
     sequence.forEach(q => uniqueQuestions.set(q.id, q));
 
@@ -268,7 +270,6 @@ export default function AssessmentApp() {
     loadConcept(currentConceptIndex + 1);
   };
 
-  // 處理反思問卷
   const handleSurveyAnswer = (questionId, option) => {
     setSurveyAnswers(prev => ({
       ...prev,
@@ -277,7 +278,6 @@ export default function AssessmentApp() {
   };
   
   const finishSurvey = () => {
-    // 檢查是否每題都填了
     if (Object.keys(surveyAnswers).length < SURVEY_QUESTIONS.length) {
       alert("請完成所有問題喔！");
       return;
@@ -287,7 +287,6 @@ export default function AssessmentApp() {
   };
 
   const generateFeedbackData = () => {
-    // ... 原有的評分邏輯 ...
     let dimensionScores = {
       [DIMENSIONS.CONCEPT]: { correct: 0, total: 0 },
       [DIMENSIONS.COMPUTATION]: { correct: 0, total: 0 },
@@ -341,7 +340,6 @@ export default function AssessmentApp() {
     const formattedTime = formatTime(durationSeconds);
     const teacherSummaryText = "在九年級這個階段，評量的核心不應只是「算對數學題」，而是「連結真實世界」。希望你現在已經懂得為什麼 3 分鐘的未壓縮錄音檔會這麼大，以及為什麼我們需要 MP3 格式來壓縮它。";
 
-    // 將問卷結果整合進評語
     const surveyText = SURVEY_QUESTIONS.map(q => `[反思] ${q.text}：${surveyAnswers[q.id] || ''}`).join("\n");
     const fullFeedbackText = feedbackList.map(f => `[${f.title}] ${f.text}`).join("\n") + "\n\n" + surveyText;
 
@@ -351,7 +349,7 @@ export default function AssessmentApp() {
       conceptLevel: feedbackList.find(f => f.dim === DIMENSIONS.CONCEPT)?.level,
       computationLevel: feedbackList.find(f => f.dim === DIMENSIONS.COMPUTATION)?.level,
       applicationLevel: feedbackList.find(f => f.dim === DIMENSIONS.APPLICATION)?.level,
-      feedbackText: fullFeedbackText, // 整合後的評語
+      feedbackText: fullFeedbackText,
       teacherSummary: teacherSummaryText,
       totalTime: formattedTime,
       randomId: generatedRandomId
@@ -417,7 +415,7 @@ export default function AssessmentApp() {
                  <div className="absolute -top-3 left-6 bg-yellow-400 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">測驗說明</div>
                 <ul className="list-none space-y-3 text-sm text-gray-600 mt-2">
                   <li className="flex items-center gap-2"><Heart size={16} className="text-rose-400 fill-current" /> 題型只有「是非題」或「二選一」，輕鬆作答！</li>
-                  <li className="flex items-center gap-2"><Cloud size={16} className="text-sky-400 fill-current" /> 請認真看題目<span className="text-rose-500 font-bold">認真作答</span></li>
+                  <li className="flex items-center gap-2"><Cloud size={16} className="text-sky-400 fill-current" /> 請認真看題目，<span className="text-rose-500 font-bold">作答太快會被系統發現喔！</span></li>
                   <li className="flex items-center gap-2"><Lock size={16} className="text-purple-400 fill-current" /> 只能填寫一次，請勿重新整理頁面。</li>
                 </ul>
               </div>
@@ -567,7 +565,8 @@ export default function AssessmentApp() {
 
   // 5. Result
   if (currentStep === 'result') {
-    const displayFeedback = storedFeedback.length > 0 ? storedFeedback : generateFeedbackData();
+    // 防呆：確保 displayFeedback 有資料，即使 localStorage 讀取失敗
+    const displayFeedback = (storedFeedback && storedFeedback.length > 0) ? storedFeedback : generateFeedbackData();
 
     return (
       <div className="min-h-screen bg-[#f8fafc] p-4 font-sans">
