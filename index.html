@@ -95,6 +95,7 @@
             }
         };
 
+        // --- 完整題庫 (共 8 個單元，24 題，平均分配 A/B/C/D) ---
         const QUIZ_DATA = [
             // 單元 1: 聲音數位化原理 (基礎)
             {
@@ -102,9 +103,9 @@
                 title: '聲音數位化：取樣與格式',
                 dimension: DIMENSIONS.CONCEPT,
                 questions: [
-                    { id: 'q1-1', type: 'MC', text: '一般電話的通話取樣頻率是 8kHz，代表 1 秒鐘要進行幾次取樣？', options: ['8,000 次', '8 次', '800 次', '80,000 次'], correctAnswer: '8,000 次' },
-                    { id: 'q1-2', type: 'MC', text: '同一段聲音，以下列何種格式錄製，它的檔案最大 (未經壓縮)？', options: ['WAV(.wav)', 'MIDI(.mid)', 'MP3(.mp3)', 'DOC(.doc)'], correctAnswer: 'WAV(.wav)' },
-                    { id: 'q1-3', type: 'TF', text: '「取樣」是指將連續的類比訊號，在時間軸上切割成不連續的點。', options: ['正確', '錯誤'], correctAnswer: '正確' } // Check
+                    { id: 'q1-1', type: 'MC', text: '一般電話的通話取樣頻率是 8kHz，代表 1 秒鐘要進行幾次取樣？', options: ['8,000 次', '8 次', '800 次', '80,000 次'], correctAnswer: '8,000 次' }, // Ans: A
+                    { id: 'q1-2', type: 'MC', text: '同一段聲音，以下列何種格式錄製，它的檔案最大 (未經壓縮)？', options: ['MIDI(.mid)', 'WAV(.wav)', 'MP3(.mp3)', 'DOC(.doc)'], correctAnswer: 'WAV(.wav)' }, // Ans: B
+                    { id: 'q1-3', type: 'TF', text: '「取樣」是指將連續的類比訊號，在時間軸上切割成不連續的點。', options: ['正確', '錯誤'], correctAnswer: '正確' } // Ans: A (True)
                 ]
             },
             // 單元 2: 聲音數位化原理 (進階)
@@ -113,9 +114,9 @@
                 title: '聲音數位化：品質與量化',
                 dimension: DIMENSIONS.CONCEPT,
                 questions: [
-                    { id: 'q2-1', type: 'MC', text: '若要提高錄音的品質，使其更接近原音，應該如何調整？', options: ['提高取樣頻率與解析度', '降低取樣頻率與解析度'], correctAnswer: '提高取樣頻率與解析度' },
-                    { id: 'q2-2', type: 'MC', text: '關於「量化」的敘述，下列何者正確？', options: ['量化是紀錄波形的振幅數值', '量化是紀錄時間的長短'], correctAnswer: '量化是紀錄波形的振幅數值' },
-                    { id: 'q2-3', type: 'MC', text: '若要計算未壓縮聲音檔的大小，公式中「不需要」包含下列哪一項？', options: ['錄音時間長度', '麥克風的廠牌'], correctAnswer: '麥克風的廠牌' } // Check
+                    { id: 'q2-1', type: 'MC', text: '若要提高錄音的品質，使其更接近原音，應該如何調整？', options: ['降低取樣頻率與解析度', '不改變取樣頻率但降低解析度', '提高取樣頻率與解析度', '只提高解析度'], correctAnswer: '提高取樣頻率與解析度' }, // Ans: C
+                    { id: 'q2-2', type: 'MC', text: '關於「量化」的敘述，下列何者正確？', options: ['量化是紀錄時間的長短', '量化是將訊號轉為頻率', '量化是清除雜訊的過程', '量化是紀錄波形的振幅數值'], correctAnswer: '量化是紀錄波形的振幅數值' }, // Ans: D
+                    { id: 'q2-3', type: 'MC', text: '若要計算未壓縮聲音檔的大小，公式中「不需要」包含下列哪一項？', options: ['麥克風的廠牌', '錄音時間長度', '取樣頻率', '位元深度'], correctAnswer: '麥克風的廠牌' } // Ans: A
                 ]
             },
             // 單元 3: 影像數位化 (基礎)
@@ -124,9 +125,9 @@
                 title: '數位影像：向量與點陣',
                 dimension: DIMENSIONS.CONCEPT,
                 questions: [
-                    { id: 'q3-1', type: 'MC', text: '請問以「數學公式」記錄影像資訊的為下列何種影像類型？(放大不失真)', options: ['向量圖', '點陣圖', '柏拉圖', '西雅圖'], correctAnswer: '向量圖' },
-                    { id: 'q3-2', type: 'TF', text: '「向量圖」放大後邊緣會產生鋸齒狀的失真，不適合用於大圖輸出。', options: ['正確', '錯誤'], correctAnswer: '錯誤' },
-                    { id: 'q3-3', type: 'MC', text: '手機拍出來的照片，通常是屬於哪一種類型的圖檔？', options: ['點陣圖 (Bitmap)', '向量圖 (Vector)'], correctAnswer: '點陣圖 (Bitmap)' } // Check
+                    { id: 'q3-1', type: 'MC', text: '請問以「數學公式」記錄影像資訊的為下列何種影像類型？(放大不失真)', options: ['點陣圖', '向量圖', '柏拉圖', '西雅圖'], correctAnswer: '向量圖' }, // Ans: B
+                    { id: 'q3-2', type: 'TF', text: '「向量圖」放大後邊緣會產生鋸齒狀的失真，不適合用於大圖輸出。', options: ['正確', '錯誤'], correctAnswer: '錯誤' }, // Ans: B (False)
+                    { id: 'q3-3', type: 'MC', text: '手機拍出來的照片，通常是屬於哪一種類型的圖檔？', options: ['向量圖 (Vector)', 'GIF 動畫', '點陣圖 (Bitmap)', 'SVG 圖檔'], correctAnswer: '點陣圖 (Bitmap)' } // Ans: C
                 ]
             },
             // 單元 4: 影像數位化 (運算)
@@ -135,9 +136,9 @@
                 title: '數位影像：解析度與色彩',
                 dimension: DIMENSIONS.COMPUTATION,
                 questions: [
-                    { id: 'q4-1', type: 'MC', text: '若將 4x6 的照片，用掃描器以 300DPI 進行數位化，請問其數位化後的影像「長邊」會是多少 Dots (像素)？', options: ['1800', '1200', '75', '50'], correctAnswer: '1800' },
-                    { id: 'q4-2', type: 'MC', text: '請問彩色影像如果以 8 位元來記錄每一種色光 (R, G, B)，那麼畫面中的每一個像素會使用多少位元來表示色彩？', options: ['24 位元', '8 位元', '32 位元', '16 位元'], correctAnswer: '24 位元' },
-                    { id: 'q4-3', type: 'MC', text: '哪一種圖檔是透過數學公式來紀錄圖形的形狀與顏色？', options: ['向量圖', '點陣圖'], correctAnswer: '向量圖' } // Check
+                    { id: 'q4-1', type: 'MC', text: '若將 4x6 的照片，用掃描器以 300DPI 進行數位化，請問其數位化後的影像「長邊」會是多少 Dots (像素)？', options: ['1800', '1200', '75', '50'], correctAnswer: '1800' }, // Ans: A
+                    { id: 'q4-2', type: 'MC', text: '請問彩色影像如果以 8 位元來記錄每一種色光 (R, G, B)，那麼畫面中的每一個像素會使用多少位元來表示色彩？', options: ['8 位元', '24 位元', '32 位元', '16 位元'], correctAnswer: '24 位元' }, // Ans: B
+                    { id: 'q4-3', type: 'MC', text: '哪一種圖檔是透過數學公式來紀錄圖形的形狀與顏色？', options: ['點陣圖', '柏拉圖', '向量圖', '西雅圖'], correctAnswer: '向量圖' } // Ans: C
                 ]
             },
             // 單元 5: 資料表示 (基礎運算)
@@ -146,9 +147,9 @@
                 title: '資料表示：基礎二進位',
                 dimension: DIMENSIONS.COMPUTATION,
                 questions: [
-                    { id: 'q5-1', type: 'TF', text: '電腦內部處理資料時，主要是使用「十進位」系統。', options: ['正確', '錯誤'], correctAnswer: '錯誤' },
-                    { id: 'q5-2', type: 'MC', text: '十進位的數字「3」，轉換成二進位是多少？', options: ['11', '10', '00', '01'], correctAnswer: '11' },
-                    { id: 'q5-3', type: 'MC', text: '二進位的「100」，轉換成十進位是多少？', options: ['4', '8'], correctAnswer: '4' } // Check
+                    { id: 'q5-1', type: 'TF', text: '電腦內部處理資料時，主要是使用「十進位」系統。', options: ['正確', '錯誤'], correctAnswer: '錯誤' }, // Ans: B (False)
+                    { id: 'q5-2', type: 'MC', text: '十進位的數字「3」，轉換成二進位是多少？', options: ['10', '00', '01', '11'], correctAnswer: '11' }, // Ans: D
+                    { id: 'q5-3', type: 'MC', text: '二進位的「100」，轉換成十進位是多少？', options: ['8', '2', '6', '4'], correctAnswer: '4' } // Ans: D
                 ]
             },
             // 單元 6: 資料表示 (進階運算)
@@ -157,9 +158,9 @@
                 title: '資料表示：進階運算',
                 dimension: DIMENSIONS.COMPUTATION,
                 questions: [
-                    { id: 'q6-1', type: 'MC', text: '(10010)₂，換算成十進位是多少？', options: ['18', '12', '20', '16'], correctAnswer: '18' },
-                    { id: 'q6-2', type: 'MC', text: '正整數 9 經過數位化後，若以「8 位元」的格式來表示，應該會是多少？', options: ['00001001', '1001', '10010000', '00001010'], correctAnswer: '00001001' },
-                    { id: 'q6-3', type: 'MC', text: '1 Byte (位元組) 等於多少 bits (位元)？', options: ['8 bits', '10 bits'], correctAnswer: '8 bits' } // Check
+                    { id: 'q6-1', type: 'MC', text: '(10010)₂，換算成十進位是多少？', options: ['18', '12', '20', '16'], correctAnswer: '18' }, // Ans: A
+                    { id: 'q6-2', type: 'MC', text: '正整數 9 經過數位化後，若以「8 位元」的格式來表示，應該會是多少？', options: ['1001', '00001001', '10010000', '00001010'], correctAnswer: '00001001' }, // Ans: B
+                    { id: 'q6-3', type: 'MC', text: '1 Byte (位元組) 等於多少 bits (位元)？', options: ['10 bits', '16 bits', '8 bits', '4 bits'], correctAnswer: '8 bits' } // Ans: C
                 ]
             },
             // 單元 7: 系統應用 (編碼)
@@ -168,9 +169,9 @@
                 title: '系統應用：編碼原理',
                 dimension: DIMENSIONS.APPLICATION,
                 questions: [
-                    { id: 'q7-1', type: 'MC', text: '請問以下哪一個編碼系統的推出，是為了讓電腦能同時處理多國語言混用的情況 (解決亂碼)？', options: ['Unicode', 'ASCII', 'Big-5', 'ANSI-8'], correctAnswer: 'Unicode' },
-                    { id: 'q7-2', type: 'MC', text: '若網頁出現亂碼，通常是因為哪兩種編碼系統衝突？', options: ['Big-5 與 Unicode', 'RGB 與 CMYK', 'Windows 與 MacOS', 'JPG 與 GIF'], correctAnswer: 'Big-5 與 Unicode' },
-                    { id: 'q7-3', type: 'MC', text: '想要製作背景透明的圖示，應該選擇哪種檔案格式？', options: ['PNG', 'JPG'], correctAnswer: 'PNG' } // Check
+                    { id: 'q7-1', type: 'MC', text: '請問以下哪一個編碼系統的推出，是為了讓電腦能同時處理多國語言混用的情況 (解決亂碼)？', options: ['ASCII', 'Big-5', 'ANSI-8', 'Unicode'], correctAnswer: 'Unicode' }, // Ans: D
+                    { id: 'q7-2', type: 'MC', text: '若網頁出現亂碼，通常是因為哪兩種編碼系統衝突？', options: ['Big-5 與 Unicode', 'RGB 與 CMYK', 'Windows 與 MacOS', 'JPG 與 GIF'], correctAnswer: 'Big-5 與 Unicode' }, // Ans: A
+                    { id: 'q7-3', type: 'MC', text: '想要製作背景透明的圖示，應該選擇哪種檔案格式？', options: ['JPG', 'GIF', 'PNG', 'BMP'], correctAnswer: 'PNG' } // Ans: C
                 ]
             },
             // 單元 8: 綜合觀念
@@ -179,9 +180,9 @@
                 title: '綜合觀念與儲存',
                 dimension: DIMENSIONS.APPLICATION,
                 questions: [
-                    { id: 'q8-1', type: 'TF', text: '在儲存單位中，1 GB 的容量比 1 MB 還要小。', options: ['正確', '錯誤'], correctAnswer: '錯誤' },
-                    { id: 'q8-2', type: 'MC', text: 'RGB 色彩模式中，(255, 255, 255) 代表什麼顏色？', options: ['黑色', '白色'], correctAnswer: '白色' },
-                    { id: 'q8-3', type: 'MC', text: '下列何者是電腦儲存資料的最小單位？', options: ['Bit (位元)', 'Byte (位元組)', 'KG', 'KM'], correctAnswer: 'Bit (位元)' } // Check
+                    { id: 'q8-1', type: 'TF', text: '在儲存單位中，1 GB 的容量比 1 MB 還要小。', options: ['正確', '錯誤'], correctAnswer: '錯誤' }, // Ans: B (False)
+                    { id: 'q8-2', type: 'MC', text: 'RGB 色彩模式中，(255, 255, 255) 代表什麼顏色？', options: ['黑色', '白色', '紅色', '藍色'], correctAnswer: '白色' }, // Ans: B
+                    { id: 'q8-3', type: 'MC', text: '下列何者是電腦儲存資料的最小單位？', options: ['Byte (位元組)', 'KG', 'KM', 'Bit (位元)'], correctAnswer: 'Bit (位元)' } // Ans: D
                 ]
             }
         ];
@@ -202,16 +203,9 @@
 
         // 選項處理函式
         const manipulateOptions = (array) => {
-            if (array.length === 2) {
-                return [array[1], array[0]];
-            }
-            // Fisher-Yates Shuffle
-            const newArray = [...array];
-            for (let i = newArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-            }
-            return newArray;
+            // 這個版本已經預先排好位置，所以不需要隨機洗牌，直接回傳即可
+            // 如果要保留隨機性，可以取消下方的註解，但會破壞平均分佈
+            return array; 
         };
 
         // 題目映射 (ID -> 序號)
@@ -226,7 +220,7 @@
             return map;
         };
 
-        const STORAGE_KEY = 'ninth_grade_assessment_v9'; // 更新版本號
+        const STORAGE_KEY = 'ninth_grade_assessment_v11'; // 更新版本號
 
         // 簡單的無痕模式偵測
         const detectIncognito = async () => {
@@ -249,6 +243,8 @@
             const [answers, setAnswers] = useState({});
             const [scores, setScores] = useState({});
             const [speedViolations, setSpeedViolations] = useState({});
+            // 新增: 追蹤每一題的詳細紀錄 (ID -> {answer, time})
+            const [trackingLog, setTrackingLog] = useState({});
             
             const [startTime, setStartTime] = useState(null); 
             const [endTime, setEndTime] = useState(null);
@@ -330,13 +326,25 @@
 
             const handleAnswer = (option) => {
                 const now = Date.now();
-                const timeSpent = now - questionStartTime;
+                const timeSpent = now - questionStartTime; // ms
                 const currentConcept = QUIZ_DATA[currentConceptIndex];
                 const currentQ = questionSequence[currentQuestionIdx];
                 
                 let isCorrect = false;
+                const timeSpentSec = (timeSpent / 1000).toFixed(1);
 
-                if (timeSpent < 4000) {
+                // 紀錄追蹤資料
+                setTrackingLog(prev => ({
+                    ...prev,
+                    [currentQ.id]: {
+                        option: option,
+                        time: timeSpentSec,
+                        violation: timeSpent < 3000
+                    }
+                }));
+
+                // 答題速度檢核 (改為 3 秒)
+                if (timeSpent < 3000) {
                     isCorrect = false; 
                     setSpeedViolations(prev => ({
                         ...prev,
@@ -467,7 +475,6 @@
                 const surveyText = SURVEY_QUESTIONS.map(q => `[反思] ${q.text}：${surveyAnswers[q.id] || ''}`).join("\n");
                 const fullFeedbackText = feedbackList.map(f => `[${f.title}] ${f.text}`).join("\n") + "\n\n" + surveyText;
 
-                // 準備答對/答錯題號列表
                 const qMap = getQuestionNumberMap();
                 const correctList = Object.keys(answers)
                     .filter(id => answers[id])
@@ -480,6 +487,16 @@
                     .sort((a, b) => a - b)
                     .join(", ");
 
+                // 格式化追蹤資料字串
+                const trackingString = Object.keys(trackingLog)
+                    .map(id => {
+                        const log = trackingLog[id];
+                        const qNum = qMap[id] || id;
+                        const violationMark = log.violation ? '[快答]' : '';
+                        return `Q${qNum}: ${log.option} (${log.time}s)${violationMark}`;
+                    })
+                    .join(" | ");
+
                 const payload = {
                     className: `九年${userInfo.className}班`,
                     seatNumber: userInfo.seatNumber,
@@ -491,7 +508,8 @@
                     totalTime: formattedTime,
                     randomId: generatedRandomId,
                     correctQuestions: correctList,
-                    incorrectQuestions: incorrectList
+                    incorrectQuestions: incorrectList,
+                    trackingDetails: trackingString
                 };
 
                 try {
@@ -526,7 +544,8 @@
                 }
             };
 
-            // --- Render (同前，略) ---
+            // --- Render ---
+
             if (currentStep === 'incognito_blocked') {
                 return (
                     <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-center font-sans">
@@ -716,7 +735,12 @@
                             <div className="bg-gradient-to-r from-violet-300 to-fuchsia-300 rounded-[2rem] shadow-lg p-8 text-white relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full translate-x-10 -translate-y-10 blur-xl"></div>
                                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2 relative z-10"><Award size={24} className="text-yellow-200" /> 老師的話</h3>
-                                <p className="leading-relaxed font-medium relative z-10 text-white/95">在九年級這個階段，我們希望你學到的不只是「算對數學題」，而是能連結真實世界。<br/>希望你現在已經懂得為什麼 3 分鐘的未壓縮錄音檔會這麼大，以及為什麼我們需要 MP3 格式來壓縮它。期待這門課能幫助你了解生活中的數位科技，其實都源自於這些 0 與 1 的基礎原理！</p>
+                                <p className="leading-relaxed font-medium relative z-10 text-white/95">
+                                    {isDuplicate 
+                                        ? "系統偵測到您已完成過測驗。此為重複作答紀錄，僅供參考，不列入成績計算。" 
+                                        : "在九年級這個階段，我們希望你學到的不只是「算對數學題」，而是能連結真實世界。\n希望你現在已經懂得為什麼 3 分鐘的未壓縮錄音檔會這麼大，以及為什麼我們需要 MP3 格式來壓縮它。期待這門課能幫助你了解生活中的數位科技，其實都源自於這些 0 與 1 的基礎原理！"
+                                    }
+                                </p>
                             </div>
                             <div className="text-center text-gray-400 text-xs py-6 font-medium">評量結束，請依上方說明進行截圖上傳</div>
                         </div>
