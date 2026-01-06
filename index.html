@@ -18,13 +18,31 @@
     <!-- 自定義樣式調整 -->
     <style>
         body { font-family: "Microsoft JhengHei", "Heiti TC", sans-serif; }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+        .option-btn:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body class="bg-gray-50">
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- 圖示元件定義 (替代 lucide-react) ---
+        // --- 圖示元件定義 ---
         const Icons = {
             CheckCircle: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
             AlertCircle: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>,
@@ -41,10 +59,13 @@
             Smile: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>,
             PenTool: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>,
             MessageCircle: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>,
+            EyeOff: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>,
+            Info: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>,
+            X: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>,
         };
 
         const { useState, useEffect } = React;
-        const { CheckCircle, AlertCircle, ArrowRight, BookOpen, Calculator, Layout, Award, Send, Lock, Star, Heart, Cloud, Smile, PenTool, MessageCircle } = Icons;
+        const { CheckCircle, AlertCircle, ArrowRight, BookOpen, Calculator, Layout, Award, Send, Lock, Star, Heart, Cloud, Smile, PenTool, MessageCircle, EyeOff, Info, X } = Icons;
 
         // --- 應用程式邏輯 ---
         
@@ -75,54 +96,92 @@
         };
 
         const QUIZ_DATA = [
+            // 單元 1: 聲音數位化原理 (基礎)
             {
                 id: 'c1',
-                title: '數位化原理：取樣與量化',
+                title: '聲音數位化：取樣與格式',
                 dimension: DIMENSIONS.CONCEPT,
                 questions: [
-                { id: 'q1-1', type: 'TF', text: '「取樣」是指將連續的類比訊號，在時間軸上切割成不連續的點。', options: ['正確', '錯誤'], correctAnswer: '正確' },
-                { id: 'q1-2', type: 'MC', text: '若要提高錄音的品質，使其更接近原音，應該如何調整？', options: ['提高取樣頻率與解析度', '降低取樣頻率與解析度'], correctAnswer: '提高取樣頻率與解析度' },
-                { id: 'q1-3', type: 'MC', text: '關於「量化」的敘述，下列何者正確？', options: ['量化是紀錄波形的振幅數值', '量化是紀錄時間的長短'], correctAnswer: '量化是紀錄波形的振幅數值' }
+                    { id: 'q1-1', type: 'MC', text: '一般電話的通話取樣頻率是 8kHz，代表 1 秒鐘要進行幾次取樣？', options: ['8,000 次', '8 次', '800 次', '80,000 次'], correctAnswer: '8,000 次' },
+                    { id: 'q1-2', type: 'MC', text: '同一段聲音，以下列何種格式錄製，它的檔案最大 (未經壓縮)？', options: ['WAV(.wav)', 'MIDI(.mid)', 'MP3(.mp3)', 'DOC(.doc)'], correctAnswer: 'WAV(.wav)' },
+                    { id: 'q1-3', type: 'TF', text: '「取樣」是指將連續的類比訊號，在時間軸上切割成不連續的點。', options: ['正確', '錯誤'], correctAnswer: '正確' } // Check
                 ]
             },
+            // 單元 2: 聲音數位化原理 (進階)
             {
                 id: 'c2',
-                title: '數位影像：點陣與向量',
+                title: '聲音數位化：品質與量化',
                 dimension: DIMENSIONS.CONCEPT,
                 questions: [
-                { id: 'q2-1', type: 'TF', text: '「向量圖」放大後邊緣會產生鋸齒狀的失真，不適合用於大圖輸出。', options: ['正確', '錯誤'], correctAnswer: '錯誤' },
-                { id: 'q2-2', type: 'MC', text: '手機拍出來的照片，通常是屬於哪一種類型的圖檔？', options: ['點陣圖 (Bitmap)', '向量圖 (Vector)'], correctAnswer: '點陣圖 (Bitmap)' },
-                { id: 'q2-3', type: 'MC', text: '哪一種圖檔是透過數學公式來紀錄圖形的形狀與顏色？', options: ['向量圖', '點陣圖'], correctAnswer: '向量圖' }
+                    { id: 'q2-1', type: 'MC', text: '若要提高錄音的品質，使其更接近原音，應該如何調整？', options: ['提高取樣頻率與解析度', '降低取樣頻率與解析度'], correctAnswer: '提高取樣頻率與解析度' },
+                    { id: 'q2-2', type: 'MC', text: '關於「量化」的敘述，下列何者正確？', options: ['量化是紀錄波形的振幅數值', '量化是紀錄時間的長短'], correctAnswer: '量化是紀錄波形的振幅數值' },
+                    { id: 'q2-3', type: 'MC', text: '若要計算未壓縮聲音檔的大小，公式中「不需要」包含下列哪一項？', options: ['錄音時間長度', '麥克風的廠牌'], correctAnswer: '麥克風的廠牌' } // Check
                 ]
             },
+            // 單元 3: 影像數位化 (基礎)
             {
                 id: 'c3',
-                title: '資料表示：二進位系統',
-                dimension: DIMENSIONS.COMPUTATION,
+                title: '數位影像：向量與點陣',
+                dimension: DIMENSIONS.CONCEPT,
                 questions: [
-                { id: 'q3-1', type: 'TF', text: '電腦內部處理資料時，主要是使用「十進位」系統。', options: ['正確', '錯誤'], correctAnswer: '錯誤' },
-                { id: 'q3-2', type: 'MC', text: '十進位的數字「3」，轉換成二進位是多少？', options: ['10', '11'], correctAnswer: '11' },
-                { id: 'q3-3', type: 'MC', text: '二進位的「100」，轉換成十進位是多少？', options: ['4', '8'], correctAnswer: '4' }
+                    { id: 'q3-1', type: 'MC', text: '請問以「數學公式」記錄影像資訊的為下列何種影像類型？(放大不失真)', options: ['向量圖', '點陣圖', '柏拉圖', '西雅圖'], correctAnswer: '向量圖' },
+                    { id: 'q3-2', type: 'TF', text: '「向量圖」放大後邊緣會產生鋸齒狀的失真，不適合用於大圖輸出。', options: ['正確', '錯誤'], correctAnswer: '錯誤' },
+                    { id: 'q3-3', type: 'MC', text: '手機拍出來的照片，通常是屬於哪一種類型的圖檔？', options: ['點陣圖 (Bitmap)', '向量圖 (Vector)'], correctAnswer: '點陣圖 (Bitmap)' } // Check
                 ]
             },
+            // 單元 4: 影像數位化 (運算)
             {
                 id: 'c4',
-                title: '儲存單位與容量計算',
+                title: '數位影像：解析度與色彩',
                 dimension: DIMENSIONS.COMPUTATION,
                 questions: [
-                { id: 'q4-1', type: 'MC', text: '1 Byte (位元組) 等於多少 bits (位元)？', options: ['8 bits', '10 bits'], correctAnswer: '8 bits' },
-                { id: 'q4-2', type: 'TF', text: '在儲存單位中，1 GB 的容量比 1 MB 還要小。', options: ['正確', '錯誤'], correctAnswer: '錯誤' },
-                { id: 'q4-3', type: 'MC', text: '若要計算未壓縮聲音檔的大小，公式中「不需要」包含下列哪一項？', options: ['錄音時間長度', '麥克風的廠牌'], correctAnswer: '麥克風的廠牌' }
+                    { id: 'q4-1', type: 'MC', text: '若將 4x6 的照片，用掃描器以 300DPI 進行數位化，請問其數位化後的影像「長邊」會是多少 Dots (像素)？', options: ['1800', '1200', '75', '50'], correctAnswer: '1800' },
+                    { id: 'q4-2', type: 'MC', text: '請問彩色影像如果以 8 位元來記錄每一種色光 (R, G, B)，那麼畫面中的每一個像素會使用多少位元來表示色彩？', options: ['24 位元', '8 位元', '32 位元', '16 位元'], correctAnswer: '24 位元' },
+                    { id: 'q4-3', type: 'MC', text: '哪一種圖檔是透過數學公式來紀錄圖形的形狀與顏色？', options: ['向量圖', '點陣圖'], correctAnswer: '向量圖' } // Check
                 ]
             },
+            // 單元 5: 資料表示 (基礎運算)
             {
                 id: 'c5',
-                title: '系統應用：編碼與格式',
+                title: '資料表示：基礎二進位',
+                dimension: DIMENSIONS.COMPUTATION,
+                questions: [
+                    { id: 'q5-1', type: 'TF', text: '電腦內部處理資料時，主要是使用「十進位」系統。', options: ['正確', '錯誤'], correctAnswer: '錯誤' },
+                    { id: 'q5-2', type: 'MC', text: '十進位的數字「3」，轉換成二進位是多少？', options: ['11', '10', '00', '01'], correctAnswer: '11' },
+                    { id: 'q5-3', type: 'MC', text: '二進位的「100」，轉換成十進位是多少？', options: ['4', '8'], correctAnswer: '4' } // Check
+                ]
+            },
+            // 單元 6: 資料表示 (進階運算)
+            {
+                id: 'c6',
+                title: '資料表示：進階運算',
+                dimension: DIMENSIONS.COMPUTATION,
+                questions: [
+                    { id: 'q6-1', type: 'MC', text: '(10010)₂，換算成十進位是多少？', options: ['18', '12', '20', '16'], correctAnswer: '18' },
+                    { id: 'q6-2', type: 'MC', text: '正整數 9 經過數位化後，若以「8 位元」的格式來表示，應該會是多少？', options: ['00001001', '1001', '10010000', '00001010'], correctAnswer: '00001001' },
+                    { id: 'q6-3', type: 'MC', text: '1 Byte (位元組) 等於多少 bits (位元)？', options: ['8 bits', '10 bits'], correctAnswer: '8 bits' } // Check
+                ]
+            },
+            // 單元 7: 系統應用 (編碼)
+            {
+                id: 'c7',
+                title: '系統應用：編碼原理',
                 dimension: DIMENSIONS.APPLICATION,
                 questions: [
-                { id: 'q5-1', type: 'MC', text: '若網頁出現亂碼，通常是因為哪兩種編碼系統衝突？', options: ['Big-5 與 Unicode', 'RGB 與 CMYK'], correctAnswer: 'Big-5 與 Unicode' },
-                { id: 'q5-2', type: 'MC', text: '想要製作背景透明的圖示，應該選擇哪種檔案格式？', options: ['JPG', 'PNG'], correctAnswer: 'PNG' },
-                { id: 'q5-3', type: 'MC', text: 'RGB 色彩模式中，(255, 255, 255) 代表什麼顏色？', options: ['黑色', '白色'], correctAnswer: '白色' }
+                    { id: 'q7-1', type: 'MC', text: '請問以下哪一個編碼系統的推出，是為了讓電腦能同時處理多國語言混用的情況 (解決亂碼)？', options: ['Unicode', 'ASCII', 'Big-5', 'ANSI-8'], correctAnswer: 'Unicode' },
+                    { id: 'q7-2', type: 'MC', text: '若網頁出現亂碼，通常是因為哪兩種編碼系統衝突？', options: ['Big-5 與 Unicode', 'RGB 與 CMYK', 'Windows 與 MacOS', 'JPG 與 GIF'], correctAnswer: 'Big-5 與 Unicode' },
+                    { id: 'q7-3', type: 'MC', text: '想要製作背景透明的圖示，應該選擇哪種檔案格式？', options: ['PNG', 'JPG'], correctAnswer: 'PNG' } // Check
+                ]
+            },
+            // 單元 8: 綜合觀念
+            {
+                id: 'c8',
+                title: '綜合觀念與儲存',
+                dimension: DIMENSIONS.APPLICATION,
+                questions: [
+                    { id: 'q8-1', type: 'TF', text: '在儲存單位中，1 GB 的容量比 1 MB 還要小。', options: ['正確', '錯誤'], correctAnswer: '錯誤' },
+                    { id: 'q8-2', type: 'MC', text: 'RGB 色彩模式中，(255, 255, 255) 代表什麼顏色？', options: ['黑色', '白色'], correctAnswer: '白色' },
+                    { id: 'q8-3', type: 'MC', text: '下列何者是電腦儲存資料的最小單位？', options: ['Bit (位元)', 'Byte (位元組)', 'KG', 'KM'], correctAnswer: 'Bit (位元)' } // Check
                 ]
             }
         ];
@@ -141,7 +200,46 @@
             return `${m}分${s}秒`;
         };
 
-        const STORAGE_KEY = 'ninth_grade_assessment_v5'; // 更新版本號
+        // 選項處理函式
+        const manipulateOptions = (array) => {
+            if (array.length === 2) {
+                return [array[1], array[0]];
+            }
+            // Fisher-Yates Shuffle
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        };
+
+        // 題目映射 (ID -> 序號)
+        const getQuestionNumberMap = () => {
+            const map = {};
+            let count = 1;
+            QUIZ_DATA.forEach(c => {
+                c.questions.forEach(q => {
+                    map[q.id] = count++;
+                });
+            });
+            return map;
+        };
+
+        const STORAGE_KEY = 'ninth_grade_assessment_v9'; // 更新版本號
+
+        // 簡單的無痕模式偵測
+        const detectIncognito = async () => {
+            try {
+                if ('storage' in navigator && 'estimate' in navigator.storage) {
+                    const { usage, quota } = await navigator.storage.estimate();
+                    if (quota < 120000000) return true;
+                }
+                return false;
+            } catch(e) {
+                return false;
+            }
+        };
 
         function AssessmentApp() {
             const [currentStep, setCurrentStep] = useState('loading'); 
@@ -150,7 +248,6 @@
             const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
             const [answers, setAnswers] = useState({});
             const [scores, setScores] = useState({});
-            // 新增狀態: 記錄各構面是否有「答題過快」的情形 (Key: dimension, Value: boolean)
             const [speedViolations, setSpeedViolations] = useState({});
             
             const [startTime, setStartTime] = useState(null); 
@@ -164,26 +261,43 @@
             const [submitError, setSubmitError] = useState('');
             const [alreadyCompleted, setAlreadyCompleted] = useState(false);
             const [storedFeedback, setStoredFeedback] = useState([]); 
+            
+            const [isIncognito, setIsIncognito] = useState(false);
+            const [isDuplicate, setIsDuplicate] = useState(false);
+            const [showDuplicateModal, setShowDuplicateModal] = useState(false);
 
             useEffect(() => {
-                const savedData = localStorage.getItem(STORAGE_KEY);
-                if (savedData) {
-                    try {
-                        const parsedData = JSON.parse(savedData);
-                        if (parsedData.completed) {
-                            setRandomId(parsedData.randomId || '');
-                            setUserInfo(parsedData.userInfo || { className: '1', seatNumber: '' });
-                            setStoredFeedback(parsedData.feedbackList || []);
-                            setAlreadyCompleted(true);
-                            setCurrentStep('result');
-                            return;
-                        }
-                    } catch (e) {
-                        console.error("Local storage parse error", e);
-                        localStorage.removeItem(STORAGE_KEY);
+                const init = async () => {
+                    const incognito = await detectIncognito();
+                    if (incognito) {
+                        setIsIncognito(true);
+                        setCurrentStep('incognito_blocked');
+                        return;
                     }
-                }
-                setCurrentStep('intro');
+
+                    const savedData = localStorage.getItem(STORAGE_KEY);
+                    if (savedData) {
+                        try {
+                            const parsedData = JSON.parse(savedData);
+                            if (parsedData.completed) {
+                                setRandomId(parsedData.randomId || '');
+                                setUserInfo(parsedData.userInfo || { className: '1', seatNumber: '' });
+                                setStoredFeedback(parsedData.feedbackList || []);
+                                
+                                setAlreadyCompleted(true);
+                                setIsDuplicate(true);
+                                setShowDuplicateModal(true);
+                                setCurrentStep('result');
+                                return;
+                            }
+                        } catch (e) {
+                            console.error("Local storage parse error", e);
+                            localStorage.removeItem(STORAGE_KEY);
+                        }
+                    }
+                    setCurrentStep('intro');
+                };
+                init();
             }, []);
 
             useEffect(() => {
@@ -222,35 +336,25 @@
                 
                 let isCorrect = false;
 
-                // --- 答題速度檢核 ---
-                // 若答題時間 < 4000ms (4秒) -> 直接判錯，並記錄違規
                 if (timeSpent < 4000) {
-                    // console.log(`Too fast! (${timeSpent}ms). Marked as wrong.`);
-                    isCorrect = false; // 強制判錯
-                    
-                    // 記錄該構面發生過快情形
+                    isCorrect = false; 
                     setSpeedViolations(prev => ({
                         ...prev,
                         [currentConcept.dimension]: true
                     }));
                 } else {
-                    // 正常計分
                     isCorrect = (option === currentQ.correctAnswer);
                 }
 
-                // 記錄答案
                 const newAnswers = { ...answers, [currentQ.id]: isCorrect };
                 setAnswers(newAnswers);
 
-                // 適性化加題判斷
-                // 邏輯：如果是該 Concept 的第 2 題 (index 1)
                 if (currentQuestionIdx === 1) { 
                     const q1Result = newAnswers[currentConcept.questions[0].id];
                     const q2Result = isCorrect;
                     
                     let nextSequence = [...questionSequence];
                     
-                    // 若答對一半 (一對一錯)，加入第三題
                     if (q1Result !== q2Result) {
                         nextSequence.push(currentConcept.questions[2]); 
                         setQuestionSequence(nextSequence);
@@ -327,10 +431,8 @@
                     if(dim === DIMENSIONS.COMPUTATION) title = "二、運算思維與數值轉換";
                     if(dim === DIMENSIONS.APPLICATION) title = "三、系統應用與編碼素養";
 
-                    // 預設評語
                     let feedbackText = FEEDBACK_LIBRARY[dim][level];
 
-                    // **特殊規則：若該構面有「答題過快」紀錄，強制修改評語**
                     if (speedViolations[dim]) {
                         feedbackText = "答題速度過快，難以評斷";
                     }
@@ -365,6 +467,19 @@
                 const surveyText = SURVEY_QUESTIONS.map(q => `[反思] ${q.text}：${surveyAnswers[q.id] || ''}`).join("\n");
                 const fullFeedbackText = feedbackList.map(f => `[${f.title}] ${f.text}`).join("\n") + "\n\n" + surveyText;
 
+                // 準備答對/答錯題號列表
+                const qMap = getQuestionNumberMap();
+                const correctList = Object.keys(answers)
+                    .filter(id => answers[id])
+                    .map(id => qMap[id])
+                    .sort((a, b) => a - b)
+                    .join(", ");
+                const incorrectList = Object.keys(answers)
+                    .filter(id => !answers[id])
+                    .map(id => qMap[id])
+                    .sort((a, b) => a - b)
+                    .join(", ");
+
                 const payload = {
                     className: `九年${userInfo.className}班`,
                     seatNumber: userInfo.seatNumber,
@@ -374,11 +489,13 @@
                     feedbackText: fullFeedbackText,
                     teacherSummary: teacherSummaryText,
                     totalTime: formattedTime,
-                    randomId: generatedRandomId
+                    randomId: generatedRandomId,
+                    correctQuestions: correctList,
+                    incorrectQuestions: incorrectList
                 };
 
                 try {
-                    if (GOOGLE_SCRIPT_URL) {
+                    if (!isDuplicate && GOOGLE_SCRIPT_URL) {
                         await fetch(GOOGLE_SCRIPT_URL, {
                             method: 'POST',
                             mode: 'no-cors', 
@@ -386,7 +503,7 @@
                             body: JSON.stringify(payload)
                         });
                     } else {
-                        await new Promise(resolve => setTimeout(resolve, 1500));
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                     }
 
                     setRandomId(generatedRandomId);
@@ -409,6 +526,19 @@
                 }
             };
 
+            // --- Render (同前，略) ---
+            if (currentStep === 'incognito_blocked') {
+                return (
+                    <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-center font-sans">
+                        <div className="bg-gray-800 p-8 rounded-3xl border-2 border-red-500 shadow-2xl max-w-md w-full">
+                            <div className="text-red-500 mb-6 flex justify-center"><EyeOff size={64} /></div>
+                            <h1 className="text-2xl font-bold text-white mb-4">無法在無痕模式中進行評量</h1>
+                            <p className="text-gray-400">系統偵測到您正在使用「無痕模式」或「私密瀏覽」。<br/><br/>請關閉此視窗，使用<strong>一般模式</strong>重新開啟網頁以進行測驗。</p>
+                        </div>
+                    </div>
+                );
+            }
+
             if (currentStep === 'loading') {
                 return <div className="min-h-screen flex items-center justify-center bg-pink-50 text-gray-500 font-medium">✨ 準備中...</div>;
             }
@@ -427,22 +557,16 @@
                             </div>
                             <div className="p-10">
                                 <div className="space-y-6 text-gray-600">
-                                    <p className="text-lg leading-relaxed text-center font-medium">
-                                        嗨！各位同學好 👋 <br/>這是一個可愛的小測驗，幫你回顧這學期學到的 <span className="text-rose-500 font-bold">資料數位化</span> 與 <span className="text-sky-500 font-bold">0與1的秘密</span>。
-                                    </p>
+                                    <p className="text-lg leading-relaxed text-center font-medium">嗨！各位同學好 👋 <br/>這個小測驗是回顧這學期<span className="text-rose-500 font-bold">「資料數位化」</span>的學習內容。</p>
                                     <div className="bg-yellow-50 p-6 rounded-3xl border-2 border-yellow-200 space-y-3 relative">
-                                        <div className="absolute -top-3 left-6 bg-yellow-400 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">測驗說明</div>
+                                        <div className="absolute -top-3 left-6 bg-yellow-400 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">評量說明</div>
                                         <ul className="list-none space-y-3 text-sm text-gray-600 mt-2">
                                             <li className="flex items-center gap-2"><Heart size={16} className="text-rose-400 fill-current" /> 題型只有「是非題」或「二選一」，輕鬆作答！</li>
-                                            <li className="flex items-center gap-2"><Cloud size={16} className="text-sky-400 fill-current" /> 
-                                                <span className="text-rose-500 font-bold">不列入成績計算，而是為了了解你是否有學到課程中的觀念</span>
-                                            </li>
+                                            <li className="flex items-center gap-2"><Cloud size={16} className="text-sky-400 fill-current" /> <span className="text-rose-500 font-bold">不列入成績計算，而是為了了解你是否有學到課程中的觀念</span></li>
                                             <li className="flex items-center gap-2"><Lock size={16} className="text-purple-400 fill-current" /> 只能填寫一次，請勿重新整理頁面。</li>
                                         </ul>
                                     </div>
-                                    <button onClick={() => setCurrentStep('quiz')} className="w-full bg-sky-400 hover:bg-sky-500 text-white font-bold py-4 px-6 rounded-full transition-all transform hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2 shadow-lg hover:shadow-sky-200 text-lg">
-                                        開始冒險 <ArrowRight size={24} />
-                                    </button>
+                                    <button onClick={() => setCurrentStep('quiz')} className="w-full bg-sky-400 hover:bg-sky-500 text-white font-bold py-4 px-6 rounded-full transition-all transform hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2 shadow-lg hover:shadow-sky-200 text-lg">開始 <ArrowRight size={24} /></button>
                                 </div>
                             </div>
                         </div>
@@ -453,19 +577,14 @@
             if (currentStep === 'quiz') {
                 const currentConcept = QUIZ_DATA[currentConceptIndex];
                 const currentQuestion = questionSequence[currentQuestionIdx];
-                
                 if (!currentConcept || !currentQuestion) return <div className="min-h-screen flex items-center justify-center bg-pink-50">載入中...</div>;
-                
                 const totalConcepts = QUIZ_DATA.length;
                 const progress = ((currentConceptIndex) / totalConcepts) * 100;
-
                 return (
                     <div className="min-h-screen bg-[#fff8f0] flex items-center justify-center p-4 font-sans">
                         <div className="max-w-xl w-full">
                             <div className="mb-6 bg-white p-3 rounded-full shadow-sm border border-orange-100 flex items-center gap-3">
-                                <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
-                                    <div className="h-full bg-gradient-to-r from-rose-300 to-orange-300 transition-all duration-700 ease-out" style={{ width: `${progress}%` }}></div>
-                                </div>
+                                <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-rose-300 to-orange-300 transition-all duration-700 ease-out" style={{ width: `${progress}%` }}></div></div>
                                 <span className="text-xs font-bold text-orange-400 whitespace-nowrap">{Math.round(progress)}% 完成</span>
                             </div>
                             <div className="bg-white rounded-[2rem] shadow-xl border-4 border-white overflow-hidden relative ring-4 ring-orange-50">
@@ -475,19 +594,15 @@
                                 </div>
                                 <div className="p-8">
                                     <div className="mb-6">
-                                        <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-bold mb-4 shadow-sm ${currentQuestion.type === 'TF' ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-600'}`}>
-                                            {currentQuestion.type === 'TF' ? '⭕ ❌ 是非題' : '🔢 選擇題'}
-                                        </span>
+                                        <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-bold mb-4 shadow-sm ${currentQuestion.type === 'TF' ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-600'}`}>{currentQuestion.type === 'TF' ? '⭕ ❌ 是非題' : '🔢 選擇題'}</span>
                                         <h3 className="text-xl font-bold text-gray-700 leading-relaxed tracking-wide">{currentQuestion.text}</h3>
                                     </div>
                                     <div className="grid grid-cols-1 gap-4">
                                         {currentQuestion.options.map((option, idx) => (
-                                            <button key={idx} onClick={() => handleAnswer(option)} className="group relative p-5 text-left bg-gray-50 border-2 border-gray-100 rounded-2xl hover:border-sky-300 hover:bg-sky-50 transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98]">
+                                            <button key={idx} onClick={() => handleAnswer(option)} className="group option-btn relative p-5 text-left bg-gray-50 border-2 border-gray-100 rounded-2xl hover:border-sky-300 hover:bg-sky-50 transition-all duration-300 shadow-sm hover:shadow-md">
                                                 <div className="flex items-center justify-between">
                                                     <span className="font-bold text-gray-600 group-hover:text-sky-600 text-lg pl-2">{option}</span>
-                                                    <div className="w-8 h-8 rounded-full bg-white border-2 border-gray-200 group-hover:border-sky-400 flex items-center justify-center transition-colors">
-                                                        <div className="w-3 h-3 rounded-full bg-sky-400 opacity-0 group-hover:opacity-100 transition-opacity transform scale-0 group-hover:scale-100"></div>
-                                                    </div>
+                                                    <div className="w-8 h-8 rounded-full bg-white border-2 border-gray-200 group-hover:border-sky-400 flex items-center justify-center transition-colors"><div className="w-3 h-3 rounded-full bg-sky-400 opacity-0 group-hover:opacity-100 transition-opacity transform scale-0 group-hover:scale-100"></div></div>
                                                 </div>
                                             </button>
                                         ))}
@@ -504,40 +619,21 @@
                     <div className="min-h-screen bg-gradient-to-t from-teal-50 to-white flex items-center justify-center p-4 font-sans">
                         <div className="max-w-2xl w-full bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-4 border-white">
                             <div className="bg-teal-400 p-8 text-white text-center">
-                                <h2 className="text-2xl font-bold flex justify-center items-center gap-2">
-                                    <Smile className="text-yellow-200" /> 學習態度自我檢核
-                                </h2>
+                                <h2 className="text-2xl font-bold flex justify-center items-center gap-2"><Smile className="text-yellow-200" /> 學習態度自我檢核</h2>
                                 <p className="opacity-90 mt-2 text-sm font-medium">回答這三題，就完成囉！</p>
                             </div>
                             <div className="p-8 space-y-8">
                                 {SURVEY_QUESTIONS.map((q) => (
                                     <div key={q.id} className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
-                                        <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center gap-3">
-                                            <div className="bg-white p-2 rounded-full text-teal-500 shadow-sm">{q.icon}</div>
-                                            {q.text}
-                                        </h3>
+                                        <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center gap-3"><div className="bg-white p-2 rounded-full text-teal-500 shadow-sm">{q.icon}</div>{q.text}</h3>
                                         <div className="grid grid-cols-2 gap-3">
                                             {q.options.map((opt) => (
-                                                <button
-                                                    key={opt}
-                                                    onClick={() => handleSurveyAnswer(q.id, opt)}
-                                                    className={`py-3 px-4 rounded-xl text-sm font-bold transition-all
-                                                        ${surveyAnswers[q.id] === opt 
-                                                            ? 'bg-teal-500 text-white shadow-lg scale-105' 
-                                                            : 'bg-white text-gray-500 border border-gray-200 hover:border-teal-300 hover:text-teal-600'}`}
-                                                >
-                                                    {opt}
-                                                </button>
+                                                <button key={opt} onClick={() => handleSurveyAnswer(q.id, opt)} className={`py-3 px-4 rounded-xl text-sm font-bold transition-all ${surveyAnswers[q.id] === opt ? 'bg-teal-500 text-white shadow-lg scale-105' : 'bg-white text-gray-500 border border-gray-200 hover:border-teal-300 hover:text-teal-600'}`}>{opt}</button>
                                             ))}
                                         </div>
                                     </div>
                                 ))}
-                                <button 
-                                    onClick={finishSurvey}
-                                    className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg transition-transform hover:-translate-y-1 text-lg flex items-center justify-center gap-2"
-                                >
-                                    完成並送出 <ArrowRight />
-                                </button>
+                                <button onClick={finishSurvey} className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg transition-transform hover:-translate-y-1 text-lg flex items-center justify-center gap-2">完成並送出 <ArrowRight /></button>
                             </div>
                         </div>
                     </div>
@@ -549,9 +645,7 @@
                     <div className="min-h-screen bg-gradient-to-t from-violet-100 to-white flex items-center justify-center p-4 font-sans">
                         <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-4 border-white">
                             <div className="bg-violet-400 p-8 text-white text-center">
-                                <h2 className="text-2xl font-bold flex justify-center items-center gap-2">
-                                    <Award className="text-yellow-300" /> 恭喜完成！
-                                </h2>
+                                <h2 className="text-2xl font-bold flex justify-center items-center gap-2"><Award className="text-yellow-300" /> 恭喜完成！</h2>
                                 <p className="opacity-90 mt-2 text-sm font-medium">填寫班級座號，查看你的成果卡 ✨</p>
                             </div>
                             <div className="p-8">
@@ -585,7 +679,17 @@
                 const displayFeedback = (storedFeedback && storedFeedback.length > 0) ? storedFeedback : generateFeedbackData();
 
                 return (
-                    <div className="min-h-screen bg-[#f8fafc] p-4 font-sans">
+                    <div className="min-h-screen bg-[#f8fafc] p-4 font-sans relative">
+                        {showDuplicateModal && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+                                <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center border-4 border-yellow-200" style={{animation: 'slideIn 0.4s ease-out'}}>
+                                    <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full mb-4"><Info size={32} /></div>
+                                    <h3 className="text-xl font-bold text-gray-800 mb-2">溫馨提醒</h3>
+                                    <p className="text-gray-600 mb-6 font-medium">您已經完成過評量囉！<br/>請將結果截圖上傳即可，<br/><span className="text-rose-500 font-bold">不需重複作答</span>。</p>
+                                    <button onClick={() => setShowDuplicateModal(false)} className="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-3 px-6 rounded-xl transition-transform hover:scale-105 shadow-md flex items-center justify-center gap-2">我知道了 <CheckCircle size={18} /></button>
+                                </div>
+                            </div>
+                        )}
                         <div className="max-w-3xl mx-auto space-y-6">
                             <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border-4 border-white relative">
                                 {alreadyCompleted && <div className="bg-amber-100 text-amber-700 text-center py-2 text-sm font-bold flex items-center justify-center gap-2"><Lock size={14}/> 您已完成測驗</div>}
@@ -603,10 +707,8 @@
                             {displayFeedback.map((item, index) => (
                                 <div key={index} className={`bg-white rounded-[2rem] shadow-sm p-8 border-4 transition-transform hover:scale-[1.01] duration-300 ${item.level === 'A' ? 'border-emerald-100' : item.level === 'B' ? 'border-sky-100' : 'border-orange-50'}`}>
                                     <div className="flex justify-between items-center mb-4">
-                                        <h3 className={`text-xl font-bold flex items-center gap-2 ${item.level === 'A' ? 'text-emerald-600' : item.level === 'B' ? 'text-sky-600' : 'text-orange-400'}`}>
-                                            {item.level === 'A' && <Star className="fill-current" size={20}/>} {item.title}
-                                        </h3>
-                                        {item.level !== 'C' && <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${item.level === 'A' ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-600'}`}>表現等級：{item.level}</span>}
+                                        <h3 className={`text-xl font-bold flex items-center gap-2 ${item.level === 'A' ? 'text-emerald-600' : item.level === 'B' ? 'text-sky-600' : 'text-orange-400'}`}>{item.level === 'A' && <Star className="fill-current" size={20}/>} {item.title}</h3>
+                                        {!isDuplicate && item.level && item.level !== 'C' && <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${item.level === 'A' ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-600'}`}>表現等級：{item.level}</span>}
                                     </div>
                                     <p className="text-gray-600 leading-relaxed text-justify whitespace-pre-wrap font-medium">{item.text}</p>
                                 </div>
@@ -614,9 +716,9 @@
                             <div className="bg-gradient-to-r from-violet-300 to-fuchsia-300 rounded-[2rem] shadow-lg p-8 text-white relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full translate-x-10 -translate-y-10 blur-xl"></div>
                                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2 relative z-10"><Award size={24} className="text-yellow-200" /> 老師的話</h3>
-                                <p className="leading-relaxed font-medium relative z-10 text-white/95">在九年級這個階段，我們希望你學到的不只是「算對數學題」，而是能連結真實世界。<br className="my-3 block"/>希望你現在已經懂得為什麼 3 分鐘的未壓縮錄音檔會這麼大，以及為什麼我們需要 MP3 格式來壓縮它。期待這門課能幫助你了解生活中的數位科技，其實都源自於這些 0 與 1 的基礎原理！</p>
+                                <p className="leading-relaxed font-medium relative z-10 text-white/95">在九年級這個階段，我們希望你學到的不只是「算對數學題」，而是能連結真實世界。<br/>希望你現在已經懂得為什麼 3 分鐘的未壓縮錄音檔會這麼大，以及為什麼我們需要 MP3 格式來壓縮它。期待這門課能幫助你了解生活中的數位科技，其實都源自於這些 0 與 1 的基礎原理！</p>
                             </div>
-                            <div className="text-center text-gray-400 text-xs py-6 font-medium">測驗結束，請關閉視窗或通知老師登記成績 ✨</div>
+                            <div className="text-center text-gray-400 text-xs py-6 font-medium">評量結束，請依上方說明進行截圖上傳</div>
                         </div>
                     </div>
                 );
