@@ -105,7 +105,7 @@
                 questions: [
                     { id: 'q1-1', type: 'MC', text: '一般電話的通話取樣頻率是 8kHz，代表 1 秒鐘要進行幾次取樣？', options: ['8,000 次', '8 次', '800 次', '80,000 次'], correctAnswer: '8,000 次' }, // Ans: A
                     { id: 'q1-2', type: 'MC', text: '同一段聲音，以下列何種格式錄製，它的檔案最大 (未經壓縮)？', options: ['MIDI(.mid)', 'WAV(.wav)', 'MP3(.mp3)', 'DOC(.doc)'], correctAnswer: 'WAV(.wav)' }, // Ans: B
-                    { id: 'q1-3', type: 'TF', text: '「取樣」是指將連續的類比訊號，在時間軸上切割成不連續的點。', options: ['正確', '錯誤'], correctAnswer: '正確' } // Ans: A (True)
+                    { id: 'q1-3', type: 'TF', text: '聲音的「取樣」是指：在一定的時間內，指定要收集或記錄多少次聲音的訊號。', options: ['正確', '錯誤'], correctAnswer: '正確' } // Ans: A (True)
                 ]
             },
             // 單元 2: 聲音數位化原理 (進階)
@@ -126,8 +126,8 @@
                 dimension: DIMENSIONS.CONCEPT,
                 questions: [
                     { id: 'q3-1', type: 'MC', text: '請問以「數學公式」記錄影像資訊的為下列何種影像類型？(放大不失真)', options: ['點陣圖', '向量圖', '柏拉圖', '西雅圖'], correctAnswer: '向量圖' }, // Ans: B
-                    { id: 'q3-2', type: 'TF', text: '「向量圖」放大後邊緣會產生鋸齒狀的失真，不適合用於大圖輸出。', options: ['正確', '錯誤'], correctAnswer: '錯誤' }, // Ans: B (False)
-                    { id: 'q3-3', type: 'MC', text: '手機拍出來的照片，通常是屬於哪一種類型的圖檔？', options: ['向量圖 (Vector)', 'GIF 動畫', '點陣圖 (Bitmap)', 'SVG 圖檔'], correctAnswer: '點陣圖 (Bitmap)' } // Ans: C
+                    { id: 'q3-2', type: 'MC', text: '手機拍出來的照片，通常是屬於哪一種類型的圖檔？', options: ['向量圖 (Vector)', 'GIF 動畫', '點陣圖 (Bitmap)', 'SVG 圖檔'], correctAnswer: '點陣圖 (Bitmap)' }, // Ans: C
+                    { id: 'q3-3', type: 'TF', text: '「向量圖」放大後邊緣會產生鋸齒狀的失真，不適合用於大圖輸出。', options: ['正確', '錯誤'], correctAnswer: '錯誤' } // Ans: B (False)
                 ]
             },
             // 單元 4: 影像數位化 (運算)
@@ -138,7 +138,8 @@
                 questions: [
                     { id: 'q4-1', type: 'MC', text: '若將 4x6 的照片，用掃描器以 300DPI 進行數位化，請問其數位化後的影像「長邊」會是多少 Dots (像素)？', options: ['1800', '1200', '75', '50'], correctAnswer: '1800' }, // Ans: A
                     { id: 'q4-2', type: 'MC', text: '請問彩色影像如果以 8 位元來記錄每一種色光 (R, G, B)，那麼畫面中的每一個像素會使用多少位元來表示色彩？', options: ['8 位元', '24 位元', '32 位元', '16 位元'], correctAnswer: '24 位元' }, // Ans: B
-                    { id: 'q4-3', type: 'MC', text: '哪一種圖檔是透過數學公式來紀錄圖形的形狀與顏色？', options: ['點陣圖', '柏拉圖', '向量圖', '西雅圖'], correctAnswer: '向量圖' } // Ans: C
+                    // 這裡替換為原第23題 (RGB色光)
+                    { id: 'q4-3-rgb', type: 'MC', text: '數位影像主要是由哪三種「色光」所混合而成？', options: ['紅、綠、藍', '紅、黃、藍', '青、洋紅、黃', '紅、白、黑'], correctAnswer: '紅、綠、藍' } // Ans: A
                 ]
             },
             // 單元 5: 資料表示 (基礎運算)
@@ -180,9 +181,12 @@
                 title: '綜合觀念與儲存',
                 dimension: DIMENSIONS.APPLICATION,
                 questions: [
-                    { id: 'q8-1', type: 'TF', text: '在儲存單位中，1 GB 的容量比 1 MB 還要小。', options: ['正確', '錯誤'], correctAnswer: '錯誤' }, // Ans: B (False)
-                    { id: 'q8-2', type: 'MC', text: 'RGB 色彩模式中，(255, 255, 255) 代表什麼顏色？', options: ['黑色', '白色', '紅色', '藍色'], correctAnswer: '白色' }, // Ans: B
-                    { id: 'q8-3', type: 'MC', text: '下列何者是電腦儲存資料的最小單位？', options: ['Byte (位元組)', 'KG', 'KM', 'Bit (位元)'], correctAnswer: 'Bit (位元)' } // Ans: D
+                    // 新題目 Q22
+                    { id: 'q8-1-sort', type: 'MC', text: '儲存單位由小到大排序，何者正確？', options: ['KB < MB < GB < TB', 'MB < KB < GB < TB', 'KB < GB < MB < TB', 'TB < GB < MB < KB'], correctAnswer: 'KB < MB < GB < TB' }, // Ans: A
+                    // 原第24題 Q23
+                    { id: 'q8-2-bit', type: 'MC', text: '下列何者是電腦儲存資料的最小單位？', options: ['Byte (位元組)', 'KG', 'KM', 'Bit (位元)'], correctAnswer: 'Bit (位元)' }, // Ans: D
+                    // 原第22題 Q24 (Check)
+                    { id: 'q8-3-tf', type: 'TF', text: '在儲存單位中，1 GB 的容量比 1 MB 還要小。', options: ['正確', '錯誤'], correctAnswer: '錯誤' } // Ans: B (False)
                 ]
             }
         ];
@@ -203,9 +207,82 @@
 
         // 選項處理函式
         const manipulateOptions = (array) => {
-            // 這個版本已經預先排好位置，所以不需要隨機洗牌，直接回傳即可
-            // 如果要保留隨機性，可以取消下方的註解，但會破壞平均分佈
-            return array; 
+            if (array.length === 2) {
+                return [array[1], array[0]];
+            }
+            // Fisher-Yates Shuffle
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        };
+
+        // 核心邏輯：產生平衡且隨機的選項映射
+        const generateBalancedOptions = (quizData) => {
+            const map = {};
+            const mcQuestions = []; // 4 options
+            const tfQuestions = []; // 2 options
+
+            quizData.forEach(c => {
+                c.questions.forEach(q => {
+                    if (q.type === 'MC') mcQuestions.push(q);
+                    else tfQuestions.push(q);
+                });
+            });
+
+            // 1. 為選擇題產生平衡的答案位置槽 (20題 -> 各5個 0,1,2,3)
+            let mcSlots = [];
+            const baseCount = Math.floor(mcQuestions.length / 4);
+            const remainder = mcQuestions.length % 4;
+            
+            for(let i=0; i<4; i++) {
+                for(let j=0; j<baseCount; j++) mcSlots.push(i);
+            }
+            for(let k=0; k<remainder; k++) mcSlots.push(k);
+            
+            mcSlots = shuffleArray(mcSlots);
+
+            // 2. 為是非題產生平衡位置 (4題 -> 各2個)
+            let tfSlots = [0,0,1,1];
+            tfSlots = shuffleArray(tfSlots);
+
+            // 3. 分配並洗牌干擾項
+            mcQuestions.forEach((q, idx) => {
+                const correctPos = mcSlots[idx]; // 指定的正確答案位置
+                const distractors = q.options.filter(o => o !== q.correctAnswer);
+                const shuffledDistractors = shuffleArray(distractors); // 干擾項也洗牌
+                
+                const finalOptions = new Array(4);
+                finalOptions[correctPos] = q.correctAnswer;
+                let distIdx = 0;
+                for(let i=0; i<4; i++){
+                    if(i !== correctPos) finalOptions[i] = shuffledDistractors[distIdx++];
+                }
+                map[q.id] = finalOptions;
+            });
+
+            tfQuestions.forEach((q, idx) => {
+                const correctPos = tfSlots[idx];
+                const otherOption = q.options.find(o => o !== q.correctAnswer);
+                const finalOptions = new Array(2);
+                finalOptions[correctPos] = q.correctAnswer;
+                finalOptions[1-correctPos] = otherOption;
+                map[q.id] = finalOptions;
+            });
+
+            return map;
+        };
+        
+        // 簡單的洗牌函式
+        const shuffleArray = (array) => {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
         };
 
         // 題目映射 (ID -> 序號)
@@ -220,7 +297,7 @@
             return map;
         };
 
-        const STORAGE_KEY = 'ninth_grade_assessment_v11'; // 更新版本號
+        const STORAGE_KEY = 'ninth_grade_assessment_v18'; // 更新版本號
 
         // 簡單的無痕模式偵測
         const detectIncognito = async () => {
@@ -243,8 +320,8 @@
             const [answers, setAnswers] = useState({});
             const [scores, setScores] = useState({});
             const [speedViolations, setSpeedViolations] = useState({});
-            // 新增: 追蹤每一題的詳細紀錄 (ID -> {answer, time})
             const [trackingLog, setTrackingLog] = useState({});
+            const [sessionOptions, setSessionOptions] = useState({}); 
             
             const [startTime, setStartTime] = useState(null); 
             const [endTime, setEndTime] = useState(null);
@@ -270,6 +347,10 @@
                         setCurrentStep('incognito_blocked');
                         return;
                     }
+
+                    // *** 產生隨機且平衡的選項 ***
+                    const balancedOpts = generateBalancedOptions(QUIZ_DATA);
+                    setSessionOptions(balancedOpts);
 
                     const savedData = localStorage.getItem(STORAGE_KEY);
                     if (savedData) {
@@ -326,14 +407,44 @@
 
             const handleAnswer = (option) => {
                 const now = Date.now();
-                const timeSpent = now - questionStartTime; // ms
+                const timeSpent = now - questionStartTime;
                 const currentConcept = QUIZ_DATA[currentConceptIndex];
                 const currentQ = questionSequence[currentQuestionIdx];
-                
-                let isCorrect = false;
+                const isCorrectChoice = option === currentQ.correctAnswer;
                 const timeSpentSec = (timeSpent / 1000).toFixed(1);
 
-                // 紀錄追蹤資料
+                if (timeSpent < 3000 && !currentQ.isRetry) {
+                    setTrackingLog(prev => ({
+                        ...prev,
+                        [currentQ.id]: {
+                            option: option,
+                            time: timeSpentSec,
+                            violation: true
+                        }
+                    }));
+
+                    const retryQ = {
+                        ...currentQ,
+                        isRetry: true,
+                        options: shuffleArray(currentQ.options), // 重試題再次洗牌
+                        firstAttemptCorrect: isCorrectChoice
+                    };
+                    
+                    setQuestionSequence(prev => [...prev, retryQ]);
+                    setCurrentQuestionIdx(currentQuestionIdx + 1);
+                    return;
+                }
+
+                let finalIsCorrect = isCorrectChoice;
+
+                if (currentQ.isRetry) {
+                    if (timeSpent < 3000) {
+                        if (!currentQ.firstAttemptCorrect || !isCorrectChoice) {
+                            finalIsCorrect = false; 
+                        }
+                    }
+                } 
+
                 setTrackingLog(prev => ({
                     ...prev,
                     [currentQ.id]: {
@@ -343,23 +454,12 @@
                     }
                 }));
 
-                // 答題速度檢核 (改為 3 秒)
-                if (timeSpent < 3000) {
-                    isCorrect = false; 
-                    setSpeedViolations(prev => ({
-                        ...prev,
-                        [currentConcept.dimension]: true
-                    }));
-                } else {
-                    isCorrect = (option === currentQ.correctAnswer);
-                }
-
-                const newAnswers = { ...answers, [currentQ.id]: isCorrect };
+                const newAnswers = { ...answers, [currentQ.id]: finalIsCorrect };
                 setAnswers(newAnswers);
 
                 if (currentQuestionIdx === 1) { 
                     const q1Result = newAnswers[currentConcept.questions[0].id];
-                    const q2Result = isCorrect;
+                    const q2Result = finalIsCorrect; 
                     
                     let nextSequence = [...questionSequence];
                     
@@ -487,13 +587,12 @@
                     .sort((a, b) => a - b)
                     .join(", ");
 
-                // 格式化追蹤資料字串
                 const trackingString = Object.keys(trackingLog)
                     .map(id => {
                         const log = trackingLog[id];
                         const qNum = qMap[id] || id;
                         const violationMark = log.violation ? '[快答]' : '';
-                        return `Q${qNum}: ${log.option} (${log.time}s)${violationMark}`;
+                        return `Q${qNum}:${log.option}(${log.time}s)${violationMark}`;
                     })
                     .join(" | ");
 
@@ -550,9 +649,14 @@
                 return (
                     <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-center font-sans">
                         <div className="bg-gray-800 p-8 rounded-3xl border-2 border-red-500 shadow-2xl max-w-md w-full">
-                            <div className="text-red-500 mb-6 flex justify-center"><EyeOff size={64} /></div>
+                            <div className="text-red-500 mb-6 flex justify-center">
+                                <EyeOff size={64} />
+                            </div>
                             <h1 className="text-2xl font-bold text-white mb-4">無法在無痕模式中進行評量</h1>
-                            <p className="text-gray-400">系統偵測到您正在使用「無痕模式」或「私密瀏覽」。<br/><br/>請關閉此視窗，使用<strong>一般模式</strong>重新開啟網頁以進行測驗。</p>
+                            <p className="text-gray-400">
+                                系統偵測到您正在使用「無痕模式」或「私密瀏覽」。<br/><br/>
+                                請關閉此視窗，使用<strong>一般模式</strong>重新開啟網頁以進行測驗。
+                            </p>
                         </div>
                     </div>
                 );
@@ -576,16 +680,22 @@
                             </div>
                             <div className="p-10">
                                 <div className="space-y-6 text-gray-600">
-                                    <p className="text-lg leading-relaxed text-center font-medium">嗨！各位同學好 👋 <br/>這個小測驗是回顧這學期<span className="text-rose-500 font-bold">「資料數位化」</span>的學習內容。</p>
+                                    <p className="text-lg leading-relaxed text-center font-medium">
+                                        嗨！各位同學好 👋 <br/>這個小測驗是回顧這學期<span className="text-rose-500 font-bold">「資料數位化」</span>的學習內容。
+                                    </p>
                                     <div className="bg-yellow-50 p-6 rounded-3xl border-2 border-yellow-200 space-y-3 relative">
                                         <div className="absolute -top-3 left-6 bg-yellow-400 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">評量說明</div>
                                         <ul className="list-none space-y-3 text-sm text-gray-600 mt-2">
                                             <li className="flex items-center gap-2"><Heart size={16} className="text-rose-400 fill-current" /> 題型只有「是非題」或「二選一」，輕鬆作答！</li>
-                                            <li className="flex items-center gap-2"><Cloud size={16} className="text-sky-400 fill-current" /> <span className="text-rose-500 font-bold">不列入成績計算，而是為了了解你是否有學到課程中的觀念</span></li>
+                                            <li className="flex items-center gap-2"><Cloud size={16} className="text-sky-400 fill-current" /> 
+                                                <span className="text-rose-500 font-bold">不列入成績計算，而是為了了解你是否有學到課程中的觀念</span>
+                                            </li>
                                             <li className="flex items-center gap-2"><Lock size={16} className="text-purple-400 fill-current" /> 只能填寫一次，請勿重新整理頁面。</li>
                                         </ul>
                                     </div>
-                                    <button onClick={() => setCurrentStep('quiz')} className="w-full bg-sky-400 hover:bg-sky-500 text-white font-bold py-4 px-6 rounded-full transition-all transform hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2 shadow-lg hover:shadow-sky-200 text-lg">開始 <ArrowRight size={24} /></button>
+                                    <button onClick={() => setCurrentStep('quiz')} className="w-full bg-sky-400 hover:bg-sky-500 text-white font-bold py-4 px-6 rounded-full transition-all transform hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-2 shadow-lg hover:shadow-sky-200 text-lg">
+                                        開始 <ArrowRight size={24} />
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -599,6 +709,15 @@
                 if (!currentConcept || !currentQuestion) return <div className="min-h-screen flex items-center justify-center bg-pink-50">載入中...</div>;
                 const totalConcepts = QUIZ_DATA.length;
                 const progress = ((currentConceptIndex) / totalConcepts) * 100;
+                
+                // 決定要顯示的選項：重試題用自己的，正常題用平衡隨機的
+                let displayOptions = [];
+                if (currentQuestion.isRetry) {
+                    displayOptions = currentQuestion.options;
+                } else {
+                    displayOptions = (sessionOptions[currentQuestion.id]) ? sessionOptions[currentQuestion.id] : currentQuestion.options;
+                }
+
                 return (
                     <div className="min-h-screen bg-[#fff8f0] flex items-center justify-center p-4 font-sans">
                         <div className="max-w-xl w-full">
@@ -617,7 +736,7 @@
                                         <h3 className="text-xl font-bold text-gray-700 leading-relaxed tracking-wide">{currentQuestion.text}</h3>
                                     </div>
                                     <div className="grid grid-cols-1 gap-4">
-                                        {currentQuestion.options.map((option, idx) => (
+                                        {displayOptions.map((option, idx) => (
                                             <button key={idx} onClick={() => handleAnswer(option)} className="group option-btn relative p-5 text-left bg-gray-50 border-2 border-gray-100 rounded-2xl hover:border-sky-300 hover:bg-sky-50 transition-all duration-300 shadow-sm hover:shadow-md">
                                                 <div className="flex items-center justify-between">
                                                     <span className="font-bold text-gray-600 group-hover:text-sky-600 text-lg pl-2">{option}</span>
