@@ -86,7 +86,7 @@
             [DIMENSIONS.COMPUTATION]: {
                 A: "在二進位運算與檔案容量估算上展現了嚴謹的運算思維，能靈活運用公式計算未壓縮音訊大小，並正確進行單位的換算。",
                 B: "在進位制轉換計算上大致正確，唯在複雜的單位換算（如 bits 轉 MB）細節上可再細心一點，公式運用尚稱熟練。",
-                C: "建議多練習二進位的計算規則，並試著搞懂 Bit 與 Byte 的倍數差異，這對於未來評估手機或電腦容量非常重要。"
+                C: "建議多練習二進位的計算規則，並試著搞懂 bit 與 Byte 的倍數差異，這對於未來評估手機或電腦容量非常重要。"
             },
             [DIMENSIONS.APPLICATION]: {
                 A: "你對於不同文字編碼（Unicode/Big-5）與影像格式的特性瞭若指掌，能針對不同需求做出最佳的技術選擇，具備優秀的數位公民素養。",
@@ -115,7 +115,7 @@
                 dimension: DIMENSIONS.CONCEPT,
                 questions: [
                     { id: 'q2-1', type: 'MC', text: '若要提高錄音的品質，使其更接近原音，應該如何調整？', options: ['降低取樣頻率與解析度', '不改變取樣頻率但降低解析度', '提高取樣頻率與解析度', '只提高解析度'], correctAnswer: '提高取樣頻率與解析度' }, // Ans: C
-                    { id: 'q2-2', type: 'MC', text: '關於「量化」的敘述，下列何者正確？', options: ['量化是紀錄時間的長短', '量化是將訊號轉為頻率', '量化是清除雜訊的過程', '量化是紀錄波形的振幅數值'], correctAnswer: '量化是紀錄波形的振幅數值' }, // Ans: D
+                    { id: 'q2-2', type: 'MC', text: '收集到聲⾳資料後，再把資料轉換成數位的形態(0或1)，這個過程稱為什麼？', options: ['取樣', '量化', '數字化', '⽂字化'], correctAnswer: '量化' }, // Ans: B
                     { id: 'q2-3', type: 'MC', text: '若要計算未壓縮聲音檔的大小，公式中「不需要」包含下列哪一項？', options: ['麥克風的廠牌', '錄音時間長度', '取樣頻率', '位元深度'], correctAnswer: '麥克風的廠牌' } // Ans: A
                 ]
             },
@@ -125,7 +125,7 @@
                 title: '數位影像：向量與點陣',
                 dimension: DIMENSIONS.CONCEPT,
                 questions: [
-                    { id: 'q3-1', type: 'MC', text: '請問以「數學公式」記錄影像資訊的為下列何種影像類型？(放大不失真)', options: ['點陣圖', '向量圖', '柏拉圖', '西雅圖'], correctAnswer: '向量圖' }, // Ans: B
+                    { id: 'q3-1', type: 'MC', text: '請問以「數學公式」記錄影像資訊的為下列何種影像類型？', options: ['點陣圖', '向量圖', '柏拉圖', '西雅圖'], correctAnswer: '向量圖' }, // Ans: B
                     { id: 'q3-2', type: 'MC', text: '手機拍出來的照片，通常是屬於哪一種類型的圖檔？', options: ['向量圖 (Vector)', 'GIF 動畫', '點陣圖 (Bitmap)', 'SVG 圖檔'], correctAnswer: '點陣圖 (Bitmap)' }, // Ans: C
                     { id: 'q3-3', type: 'TF', text: '「向量圖」放大後邊緣會產生鋸齒狀的失真，不適合用於大圖輸出。', options: ['正確', '錯誤'], correctAnswer: '錯誤' } // Ans: B (False)
                 ]
@@ -138,8 +138,7 @@
                 questions: [
                     { id: 'q4-1', type: 'MC', text: '若將 4x6 的照片，用掃描器以 300DPI 進行數位化，請問其數位化後的影像「長邊」會是多少 Dots (像素)？', options: ['1800', '1200', '75', '50'], correctAnswer: '1800' }, // Ans: A
                     { id: 'q4-2', type: 'MC', text: '請問彩色影像如果以 8 位元來記錄每一種色光 (R, G, B)，那麼畫面中的每一個像素會使用多少位元來表示色彩？', options: ['8 位元', '24 位元', '32 位元', '16 位元'], correctAnswer: '24 位元' }, // Ans: B
-                    // 這裡替換為原第23題 (RGB色光)
-                    { id: 'q4-3-rgb', type: 'MC', text: '數位影像主要是由哪三種「色光」所混合而成？', options: ['紅、綠、藍', '紅、黃、藍', '青、洋紅、黃', '紅、白、黑'], correctAnswer: '紅、綠、藍' } // Ans: A
+                    { id: 'q4-3', type: 'MC', text: '哪一種圖檔是透過數學公式來紀錄圖形的形狀與顏色？', options: ['點陣圖', '柏拉圖', '向量圖', '西雅圖'], correctAnswer: '向量圖' } // Ans: C
                 ]
             },
             // 單元 5: 資料表示 (基礎運算)
@@ -181,12 +180,9 @@
                 title: '綜合觀念與儲存',
                 dimension: DIMENSIONS.APPLICATION,
                 questions: [
-                    // 新題目 Q22
-                    { id: 'q8-1-sort', type: 'MC', text: '儲存單位由小到大排序，何者正確？', options: ['KB < MB < GB < TB', 'MB < KB < GB < TB', 'KB < GB < MB < TB', 'TB < GB < MB < KB'], correctAnswer: 'KB < MB < GB < TB' }, // Ans: A
-                    // 原第24題 Q23
-                    { id: 'q8-2-bit', type: 'MC', text: '下列何者是電腦儲存資料的最小單位？', options: ['Byte (位元組)', 'KG', 'KM', 'Bit (位元)'], correctAnswer: 'Bit (位元)' }, // Ans: D
-                    // 原第22題 Q24 (Check)
-                    { id: 'q8-3-tf', type: 'TF', text: '在儲存單位中，1 GB 的容量比 1 MB 還要小。', options: ['正確', '錯誤'], correctAnswer: '錯誤' } // Ans: B (False)
+                    { id: 'q8-1', type: 'TF', text: '在儲存單位中，1 GB 的容量比 1 MB 還要小。', options: ['正確', '錯誤'], correctAnswer: '錯誤' }, // Ans: B (False)
+                    { id: 'q8-2', type: 'MC', text: '數位影像主要是由哪三種「色光」所混合而成？', options: ['紅、綠、藍', '紅、黃、藍', '青、洋紅、黃', '紅、白、黑'], correctAnswer: '紅、綠、藍' }, // Ans: A (RGB)
+                    { id: 'q8-3', type: 'MC', text: '下列何者是電腦儲存資料的最小單位？', options: ['Byte (位元組)', 'KG', 'KM', 'bit (位元)'], correctAnswer: 'bit (位元)' } // Ans: D
                 ]
             }
         ];
@@ -297,7 +293,7 @@
             return map;
         };
 
-        const STORAGE_KEY = 'ninth_grade_assessment_v18'; // 更新版本號
+        const STORAGE_KEY = 'ninth_grade_assessment_v21'; // 更新版本號
 
         // 簡單的無痕模式偵測
         const detectIncognito = async () => {
